@@ -1,0 +1,91 @@
+<div class="page-container">
+
+  <!-- GRUPO 1: CABEÇALHO -->
+  <div class="group-panel">
+    <div class="page-header">
+      <div class="header-main">
+        <div class="page-title-icon">
+          <mat-icon>cleaning_services</mat-icon>
+        </div>
+        <div class="page-title-box">
+          <h1>Limpeza Expressa & Otimização de Espaço</h1>
+          <div class="page-subtitle">
+            Remoção segura de temporários de usuário, Windows Temp, Prefetch e Flush de DNS
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GRUPO 2: OPÇÕES DE LIMPEZA -->
+  <div class="group-panel">
+    <div class="card-header">
+      <mat-icon class="section-icon color-blue">tune</mat-icon>
+      <h3>Opções de Remoção de Arquivos Residuais</h3>
+    </div>
+
+    <div class="options-grid">
+      <label class="check-item">
+        <input type="checkbox" [(ngModel)]="cleanUserTemp" />
+        <span>Diretório Temporário do Usuário (%TEMP%)</span>
+      </label>
+      <label class="check-item">
+        <input type="checkbox" [(ngModel)]="cleanWindowsTemp" />
+        <span>Arquivos Temporários do Windows (C:\Windows\Temp)</span>
+      </label>
+      <label class="check-item">
+        <input type="checkbox" [(ngModel)]="cleanPrefetch" />
+        <span>Cache Prefetch do Sistema Operacional</span>
+      </label>
+      <label class="check-item">
+        <input type="checkbox" [(ngModel)]="cleanWindowsUpdate" />
+        <span>Cache de Downloads do Windows Update</span>
+      </label>
+      <label class="check-item">
+        <input type="checkbox" [(ngModel)]="flushDns" />
+        <span>Esvaziar Cache DNS Resolver (ipconfig /flushdns)</span>
+      </label>
+    </div>
+
+    <div class="action-bar">
+      <button type="button" class="btn-clean" (click)="executarLimpeza()" [disabled]="loading">
+        <mat-progress-spinner *ngIf="loading" mode="indeterminate" diameter="18"></mat-progress-spinner>
+        <mat-icon *ngIf="!loading">auto_delete</mat-icon>
+        <span>{{ loading ? 'Removendo arquivos temporários...' : 'Executar Limpeza Expressa' }}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- GRUPO 3: RELATÓRIO DA LIMPEZA (EXPANSÃO VERTICAL) -->
+  <div class="group-panel panel-expand" *ngIf="report">
+    <div class="card-header">
+      <mat-icon class="section-icon color-blue">task_alt</mat-icon>
+      <h3>Relatório de Liberação de Disco</h3>
+    </div>
+
+    <div class="summary-cards">
+      <div class="summary-box">
+        <span class="box-label">Espaço Total Liberado:</span>
+        <span class="badge badge-success font-bold" style="font-size: 14px;">{{ report.megabytes_freed }} MB</span>
+      </div>
+      <div class="summary-box">
+        <span class="box-label">Arquivos Removidos:</span>
+        <span class="badge badge-info">{{ report.files_removed }}</span>
+      </div>
+      <div class="summary-box">
+        <span class="box-label">Pastas Removidas:</span>
+        <span class="badge badge-info">{{ report.folders_removed }}</span>
+      </div>
+      <div class="summary-box">
+        <span class="box-label">Em Uso / Ignorados:</span>
+        <span class="badge badge-warning">{{ report.locked_items_skipped }}</span>
+      </div>
+      <div class="summary-box">
+        <span class="box-label">DNS Flush:</span>
+        <span class="badge badge-success">{{ report.dns_flushed ? 'OK' : 'NÃO' }}</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+

@@ -1,0 +1,107 @@
+<div class="page-container">
+
+  <!-- GRUPO 1: CABEÇALHO -->
+  <div class="group-panel">
+    <div class="page-header">
+      <div class="header-main">
+        <div class="page-title-icon">
+          <mat-icon>speed</mat-icon>
+        </div>
+        <div class="page-title-box">
+          <h1>Visão Geral & Score da Estação</h1>
+          <div class="page-subtitle">
+            Auditoria integrada de estabilidade, recursos de hardware e integridade de componentes
+          </div>
+        </div>
+      </div>
+      <div>
+        <button type="button" class="btn-refresh" (click)="carregarDiagnostico()" [disabled]="loading">
+          <mat-icon *ngIf="!loading">refresh</mat-icon>
+          <mat-progress-spinner *ngIf="loading" mode="indeterminate" diameter="16"></mat-progress-spinner>
+          <span>Atualizar Auditoria</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="group-panel loading-box">
+    <mat-progress-spinner mode="indeterminate" diameter="40"></mat-progress-spinner>
+    <div style="font-weight: 600; font-size: 14px; color: #334155;">Executando varredura analítica paralela (Hardware, SMART, Bateria e Event Viewer)...</div>
+  </div>
+
+  <ng-container *ngIf="!loading && report">
+    <!-- GRUPO 2: SCORE GLOBAL & CLASSIFICAÇÃO -->
+    <div class="group-panel">
+      <div class="score-container">
+        <div class="score-circle" [style.border-color]="getScoreColor(report.machine_score)">
+          <div class="score-number" [style.color]="getScoreColor(report.machine_score)">{{ report.machine_score }}</div>
+          <div class="score-scale">/100</div>
+        </div>
+        <div class="score-details">
+          <div class="score-verdict">{{ report.score_classification }}</div>
+          <div class="score-sub">Auditoria gerada localmente em {{ report.generated_at_local }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GRUPO 3: CARDS DE MÉTRICAS RÁPIDAS -->
+    <div class="group-panel">
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-label">Processador (CPU)</div>
+          <div class="metric-val">{{ report.hardware.cpu_brand }}</div>
+          <div class="metric-sub">{{ report.hardware.cpu_physical_cores }} Cores Físicos / {{ report.hardware.cpu_logical_cores }} Threads (Uso: {{ report.hardware.cpu_usage_percent.toFixed(1) }}%)</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Memória RAM</div>
+          <div class="metric-val">{{ report.hardware.ram_used_gb.toFixed(2) }} GB / {{ report.hardware.ram_total_gb.toFixed(2) }} GB</div>
+          <div class="metric-sub">{{ report.hardware.ram_usage_percent.toFixed(1) }}% Ocupada (Disponível: {{ report.hardware.ram_available_gb.toFixed(2) }} GB)</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Sistema Operacional</div>
+          <div class="metric-val">{{ report.hardware.os_edition }}</div>
+          <div class="metric-sub">Build {{ report.hardware.os_build }} ({{ report.hardware.architecture }}) | Uptime: {{ report.hardware.uptime_hours.toFixed(1) }}h</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Event Viewer (Estabilidade)</div>
+          <div class="metric-val">BSODs: {{ report.shutdown_analysis.bsod_count }} | Quedas: {{ report.shutdown_analysis.forced_shutdowns_count }}</div>
+          <div class="metric-sub">Veredito: {{ report.shutdown_analysis.stability_verdict }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GRUPO 4: RECOMENDAÇÕES INTELIGENTES (EXPANSÃO VERTICAL) -->
+    <div class="group-panel panel-expand">
+      <div class="card-header">
+        <mat-icon class="section-icon color-blue">lightbulb</mat-icon>
+        <h3>Recomendações Técnicas Inteligentes</h3>
+      </div>
+      <div class="table-responsive" *ngIf="report.recommendations.length > 0">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Severidade</th>
+              <th>Componente</th>
+              <th>Diagnóstico / Causa</th>
+              <th>Ação Preventiva Recomendada</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let rec of report.recommendations">
+              <td>
+                <span class="badge" [ngClass]="rec.severity === 'CRÍTICO' ? 'badge-danger' : (rec.severity === 'ALTA' ? 'badge-warning' : 'badge-info')">
+                  {{ rec.severity }}
+                </span>
+              </td>
+              <td class="font-bold">{{ rec.component }}</td>
+              <td>{{ rec.issue }}</td>
+              <td><strong>{{ rec.action }}</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </ng-container>
+
+</div>
+

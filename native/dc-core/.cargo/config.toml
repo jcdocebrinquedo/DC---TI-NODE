@@ -1,0 +1,12 @@
+# Toolchain padrão: gnullvm (não exige Visual Studio Build Tools).
+# O caminho do linker (rust-lld.exe) é injetado dinamicamente por scripts/build-native.js
+# através da variável CARGO_TARGET_X86_64_PC_WINDOWS_GNULLVM_LINKER, evitando caminhos fixos por usuário.
+[build]
+target = "x86_64-pc-windows-gnullvm"
+
+[target.x86_64-pc-windows-gnullvm]
+rustflags = [
+    "-C", "link-self-contained=yes",
+    "-C", "linker-flavor=ld.lld",
+]
+

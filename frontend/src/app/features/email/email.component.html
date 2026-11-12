@@ -1,0 +1,369 @@
+<div class="page-container">
+
+  <!-- GRUPO 1: CABEÇALHO COM NAVEGAÇÃO -->
+  <div class="group-panel">
+    <div class="page-header">
+      <div class="header-main">
+        <div class="page-title-icon">
+          <mat-icon>mail</mat-icon>
+        </div>
+        <div class="page-title-box">
+          <h1>Configurador de E-mail Corporativo (Outlook)</h1>
+          <div class="page-subtitle">
+            Criação de contas POP3/IMAP com senha criptografada via DPAPI e gestão integrada de Arquivos de Dados (.PST)
+          </div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button type="button" class="tab-btn" [class.active]="activeTab === 'config'" (click)="activeTab = 'config'">
+          <mat-icon>add_circle_outline</mat-icon>
+          <span>Nova Configuração</span>
+        </button>
+        <button type="button" class="tab-btn" [class.active]="activeTab === 'overview'" (click)="activeTab = 'overview'">
+          <mat-icon>folder_special</mat-icon>
+          <span>Contas e Arquivos no Outlook</span>
+          <span class="badge badge-counter" *ngIf="detection">
+            {{ (detection.accounts?.length || 0) }} contas / {{ (detection.data_files?.length || 0) }} arquivos
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GRUPO 2: PERFIL DETECTADO & BANNER DE SINCRONIZAÇÃO -->
+  <div class="group-panel" *ngIf="detection">
+    <div class="card-header space-between">
+      <div class="flex-align">
+        <mat-icon class="section-icon color-blue">contact_mail</mat-icon>
+        <h3>Perfil do Microsoft Outlook Ativo</h3>
+      </div>
+      <button type="button" class="btn-refresh" (click)="detectarPerfil()" [disabled]="loadingDetect" title="Recarregar Perfil">
+        <mat-progress-spinner *ngIf="loadingDetect" mode="indeterminate" diameter="16"></mat-progress-spinner>
+        <mat-icon *ngIf="!loadingDetect">refresh</mat-icon>
+        <span>Atualizar</span>
+      </button>
+    </div>
+    <div class="info-row">
+      <span class="label">Versão do Office:</span>
+      <span class="badge badge-info">{{ detection.office_version }}</span>
+      <span class="label" style="margin-left: 16px;">Perfil Ativo:</span>
+      <strong>{{ detection.default_profile }}</strong>
+      <span class="label" style="margin-left: 16px;">Status:</span>
+      <span class="badge badge-success">Conectado ao HKCU</span>
+    </div>
+
+    <!-- BANNER DE SUGESTÃO: PST EXISTENTE ENCONTRADO PARA O E-MAIL -->
+    <div class="match-banner" *ngIf="matchingPstFound && activeTab === 'config'">
+      <div class="banner-icon">
+        <mat-icon>sync</mat-icon>
+      </div>
+      <div class="banner-body">
+        <div class="banner-title">Arquivo de Dados (.PST) Existente Encontrado!</div>
+        <div class="banner-text">
+          Identificamos um arquivo existente referente a este e-mail no computador:
+          <strong>{{ matchingPstFound.filename }}</strong> ({{ matchingPstFound.size_mb }} MB).
+          Deseja sincronizar e vincular a nova conta diretamente a este arquivo?
+        </div>
+      </div>
+      <div class="banner-actions">
+        <button type="button" class="btn-banner-accept" (click)="acceptSuggestedPst(matchingPstFound)">
+          <mat-icon>done</mat-icon>
+          <span>Sim, Sincronizar com este PST</span>
+        </button>
+        <button type="button" class="btn-banner-dismiss" (click)="dismissSuggestedPst()" title="Dispensar sugestão">
+          <mat-icon>close</mat-icon>
+          <span>Criar Novo</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ABA 1: FORMULÁRIO DE CONFIGURAÇÃO -->
+  <div *ngIf="activeTab === 'config'">
+
+    <!-- CARD 1: DADOS DA CONTA & AUTENTICAÇÃO -->
+    <div class="group-panel">
+      <div class="card-header">
+        <mat-icon class="section-icon color-blue">account_circle</mat-icon>
+        <h3>1. Dados da Conta e Autenticação (com Senha DPAPI)</h3>
+      </div>
+
+      <div class="form-grid">
+        <div class="field-item">
+          <label>Nome Completo / Exibição:</label>
+          <input type="text" [(ngModel)]="displayName" placeholder="Ex: Júlio César" class="custom-input" />
+        </div>
+
+        <div class="field-item">
+          <label>Endereço de E-mail Corporativo: <span class="required">*</span></label>
+          <input type="email" [(ngModel)]="emailAddress" (input)="onEmailChange()" placeholder="usuario@docebrinquedo.com.br" class="custom-input" />
+        </div>
+
+        <div class="field-item">
+          <label>Senha da Conta: <span class="required">*</span></label>
+          <div class="password-wrapper">
+            <input [type]="hidePassword ? 'password' : 'text'" [(ngModel)]="password" placeholder="Digite a senha do e-mail" class="custom-input password-input" />
+            <button type="button" class="btn-toggle-eye" (click)="togglePasswordVisibility()" [title]="hidePassword ? 'Exibir senha' : 'Ocultar senha'">
+              <mat-icon>{{ hidePassword ? 'visibility' : 'visibility_off' }}</mat-icon>
+            </button>
+          </div>
+          <span class="field-hint">
+            <mat-icon class="hint-icon">lock</mat-icon>
+            A senha será gravada no Registro com proteção nativa DPAPI (CurrentUser), exatamente como o Outlook faz.
+          </span>
+        </div>
+
+        <div class="field-item">
+          <label>Domínio Corporativo:</label>
+          <input type="text" [(ngModel)]="domain" (input)="onDomainChange()" class="custom-input font-mono" />
+        </div>
+
+        <div class="field-item">
+          <label>Tipo de Protocolo:</label>
+          <select [(ngModel)]="accountType" (change)="onAccountTypeChange()" class="custom-input">
+            <option value="Pop3">POP3 (Recomendado com Arquivo de Dados .PST Local)</option>
+            <option value="Imap">IMAP (Sincronização com Servidor)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD 2: SERVIDORES DE CONEXÃO -->
+    <div class="group-panel">
+      <div class="card-header">
+        <mat-icon class="section-icon color-blue">dns</mat-icon>
+        <h3>2. Configuração de Servidores de Correio (Entrada e Saída)</h3>
+      </div>
+
+      <div class="form-grid">
+        <div class="field-item">
+          <label>Servidor de Entrada ({{ accountType }}):</label>
+          <div class="input-with-port">
+            <input type="text" [(ngModel)]="incomingServer" class="custom-input font-mono flex-1" />
+            <div class="port-box">
+              <span class="port-label">Porta:</span>
+              <input type="number" [(ngModel)]="incomingPort" class="custom-input font-mono port-input" />
+            </div>
+          </div>
+          <div class="checkbox-row">
+            <label class="custom-checkbox">
+              <input type="checkbox" [(ngModel)]="incomingUseSSL" />
+              <span>Este servidor requer uma conexão criptografada (SSL/TLS)</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="field-item">
+          <label>Servidor de Saída (SMTP):</label>
+          <div class="input-with-port">
+            <input type="text" [(ngModel)]="outgoingServer" class="custom-input font-mono flex-1" />
+            <div class="port-box">
+              <span class="port-label">Porta:</span>
+              <input type="number" [(ngModel)]="outgoingPort" class="custom-input font-mono port-input" />
+            </div>
+          </div>
+          <div class="checkbox-row">
+            <label class="custom-checkbox">
+              <input type="checkbox" [(ngModel)]="outgoingUseSSL" />
+              <span>Usar tipo de conexão criptografada (SSL/TLS)</span>
+            </label>
+            <label class="custom-checkbox" style="margin-top: 4px;">
+              <input type="checkbox" [(ngModel)]="outgoingRequireAuth" />
+              <span>Meu servidor de saída (SMTP) requer autenticação</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD 3: GERENCIAMENTO DO ARQUIVO DE DADOS (.PST) -->
+    <div class="group-panel panel-expand">
+      <div class="card-header">
+        <mat-icon class="section-icon color-blue">save</mat-icon>
+        <h3>3. Configuração do Arquivo de Dados do Outlook (.PST)</h3>
+      </div>
+
+      <div class="pst-choice-container">
+        <label class="section-prompt">Como deseja configurar o Arquivo de Dados (.PST) desta conta?</label>
+
+        <div class="pst-options-grid">
+          <!-- OPÇÃO A: NOVO PST -->
+          <div class="pst-option-card" [class.selected]="pstModeOption === 'new'" (click)="pstModeOption = 'new'">
+            <div class="option-radio">
+              <input type="radio" name="pstMode" value="new" [(ngModel)]="pstModeOption" />
+            </div>
+            <div class="option-content">
+              <div class="option-title">
+                <mat-icon class="option-icon">note_add</mat-icon>
+                <span>Criar Novo Arquivo de Dados (.PST)</span>
+              </div>
+              <div class="option-desc">
+                Cria um novo arquivo <code>{{ (emailAddress ? emailAddress.replace('@', '_') : 'email') }}.pst</code> na pasta padrão do usuário (<em>Documents\Arquivos do Outlook</em>).
+              </div>
+            </div>
+          </div>
+
+          <!-- OPÇÃO B: PST EXISTENTE -->
+          <div class="pst-option-card" [class.selected]="pstModeOption === 'existing'" (click)="pstModeOption = 'existing'">
+            <div class="option-radio">
+              <input type="radio" name="pstMode" value="existing" [(ngModel)]="pstModeOption" />
+            </div>
+            <div class="option-content">
+              <div class="option-title">
+                <mat-icon class="option-icon">sync</mat-icon>
+                <span>Usar / Sincronizar com Arquivo de Dados (.PST) Já Existente</span>
+              </div>
+              <div class="option-desc">
+                Vincula a conta diretamente a um arquivo .pst existente no computador, preservando mensagens, histórico e pastas anteriores.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DETALHES DE SELEÇÃO QUANDO "EXISTENTE" ESTÁ MARCADO -->
+        <div class="existing-pst-box" *ngIf="pstModeOption === 'existing'">
+          <div class="field-item">
+            <label>Selecione um Arquivo de Dados (.PST) detectado ou informe o caminho completo:</label>
+
+            <select [(ngModel)]="selectedPstPath" class="custom-input" style="font-family: inherit;">
+              <option value="" disabled selected>-- Escolha um arquivo .pst da máquina --</option>
+              <option *ngFor="let candidate of detectedPstCandidates" [value]="candidate.full_path">
+                {{ candidate.filename }} ({{ candidate.size_mb }} MB) — {{ candidate.full_path }}
+              </option>
+              <option value="custom">Outro caminho personalizado (digitar manualmente)...</option>
+            </select>
+          </div>
+
+          <div class="field-item" *ngIf="selectedPstPath === 'custom' || (!selectedPstPath && detectedPstCandidates.length === 0)" style="margin-top: 12px;">
+            <label>Caminho Completo do Arquivo .PST:</label>
+            <input type="text" [(ngModel)]="customPstPath" placeholder="Ex: C:\Backups\Outlook\meu_arquivo.pst" class="custom-input font-mono" />
+          </div>
+
+          <div class="pst-info-badge" *ngIf="selectedPstPath && selectedPstPath !== 'custom'">
+            <mat-icon>check_circle</mat-icon>
+            <span>Arquivo selecionado para vinculação imediata: <strong>{{ selectedPstPath }}</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOTÃO DE AÇÃO -->
+      <div class="action-bar">
+        <button type="button" class="btn-save" (click)="configurarConta()" [disabled]="loadingConfig">
+          <mat-progress-spinner *ngIf="loadingConfig" mode="indeterminate" diameter="18"></mat-progress-spinner>
+          <mat-icon *ngIf="!loadingConfig">add_circle</mat-icon>
+          <span>{{ loadingConfig ? 'Gravando e Criptografando no Outlook...' : 'Configurar Conta e Arquivo no Outlook' }}</span>
+        </button>
+
+        <span class="security-indicator">
+          <mat-icon>shield</mat-icon>
+          Criptografia nativa DPAPI (0x02) & Registro Atômico no HKCU sem sobrescrever perfis existentes.
+        </span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ABA 2: VISÃO DO OUTLOOK (CONTAS & ARQUIVOS DE DADOS) -->
+  <div *ngIf="activeTab === 'overview'">
+
+    <div class="group-panel panel-expand">
+      <div class="outlook-tabs-header">
+        <button type="button" class="outlook-tab-btn" [class.active]="overviewSubTab === 'accounts'" (click)="overviewSubTab = 'accounts'">
+          <mat-icon>email</mat-icon>
+          <span>Email ({{ detection?.accounts?.length || 0 }})</span>
+        </button>
+        <button type="button" class="outlook-tab-btn" [class.active]="overviewSubTab === 'datafiles'" (click)="overviewSubTab = 'datafiles'">
+          <mat-icon>storage</mat-icon>
+          <span>Arquivos de Dados ({{ detection?.data_files?.length || 0 }})</span>
+        </button>
+      </div>
+
+      <!-- SUB-ABA: CONTAS DE EMAIL -->
+      <div *ngIf="overviewSubTab === 'accounts'" class="table-container">
+        <table class="custom-table" *ngIf="detection?.accounts && detection!.accounts.length > 0">
+          <thead>
+            <tr>
+              <th>Slot</th>
+              <th>Nome da Conta</th>
+              <th>Tipo</th>
+              <th>Servidor de Entrada</th>
+              <th>Servidor de Saída</th>
+              <th>Autenticação</th>
+              <th class="text-right">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let acct of detection!.accounts">
+              <td><span class="slot-badge">{{ acct.slot }}</span></td>
+              <td>
+                <div class="acct-name"><strong>{{ acct.account_name }}</strong></div>
+                <div class="acct-sub">{{ acct.display_name }} ({{ acct.email }})</div>
+              </td>
+              <td><span class="badge" [class.badge-info]="acct.type === 'POP3'" [class.badge-success]="acct.type === 'IMAP'">{{ acct.type }}</span></td>
+              <td><code>{{ acct.incoming_server }}:{{ acct.incoming_port }}</code></td>
+              <td><code>{{ acct.outgoing_server }}:{{ acct.outgoing_port }}</code></td>
+              <td>
+                <span class="badge" [class.badge-success]="acct.has_password" [class.badge-warning]="!acct.has_password">
+                  {{ acct.has_password ? 'Senha Salva (DPAPI)' : 'Sem Senha' }}
+                </span>
+              </td>
+              <td class="text-right">
+                <button type="button" class="btn-table-delete" (click)="removerConta(acct)" [disabled]="deletingSlot === acct.slot" title="Remover esta conta do Outlook">
+                  <mat-progress-spinner *ngIf="deletingSlot === acct.slot" mode="indeterminate" diameter="14"></mat-progress-spinner>
+                  <mat-icon *ngIf="deletingSlot !== acct.slot">delete_outline</mat-icon>
+                  <span>Remover</span>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="empty-state" *ngIf="!detection?.accounts || detection!.accounts.length === 0">
+          <mat-icon>inbox</mat-icon>
+          <p>Nenhuma conta de e-mail registrada encontrada no perfil atual.</p>
+        </div>
+      </div>
+
+      <!-- SUB-ABA: ARQUIVOS DE DADOS -->
+      <div *ngIf="overviewSubTab === 'datafiles'" class="table-container">
+        <table class="custom-table" *ngIf="detection?.data_files && detection!.data_files.length > 0">
+          <thead>
+            <tr>
+              <th>Nome do Arquivo</th>
+              <th>Local do Arquivo de Dados (.pst / .ost)</th>
+              <th>Tamanho</th>
+              <th>Status no Disco</th>
+              <th class="text-right">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let df of detection!.data_files">
+              <td><strong>{{ df.name }}</strong></td>
+              <td><code class="file-path">{{ df.file_path }}</code></td>
+              <td>{{ df.size_mb }} MB</td>
+              <td>
+                <span class="badge" [class.badge-success]="df.exists" [class.badge-danger]="!df.exists">
+                  {{ df.exists ? 'Arquivo Ativo' : 'Não Encontrado' }}
+                </span>
+              </td>
+              <td class="text-right">
+                <button type="button" class="btn-table-delete" (click)="removerArquivoDados(df)" [disabled]="deletingKey === df.key" title="Remover este arquivo de dados do Outlook">
+                  <mat-progress-spinner *ngIf="deletingKey === df.key" mode="indeterminate" diameter="14"></mat-progress-spinner>
+                  <mat-icon *ngIf="deletingKey !== df.key">delete_outline</mat-icon>
+                  <span>Remover</span>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="empty-state" *ngIf="!detection?.data_files || detection!.data_files.length === 0">
+          <mat-icon>folder_off</mat-icon>
+          <p>Nenhum arquivo de dados (.pst) registrado encontrado no perfil atual.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>

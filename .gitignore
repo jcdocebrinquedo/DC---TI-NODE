@@ -1,0 +1,25 @@
+# Dependências
+node_modules/
+
+# Build do frontend (gerado por `npm run build` dentro do backend)
+backend/public/*
+!backend/public/.gitkeep
+
+# Binário nativo copiado pelo build
+backend/bin/
+
+# Rust
+native/dc-core/target/
+
+# Angular
+frontend/.angular/
+frontend/dist/
+
+# Empacotamento
+backend/dist/
+release/
+
+# Saídas locais
+ordens_de_servico/
+*.log
+

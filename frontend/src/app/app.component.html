@@ -1,0 +1,112 @@
+<div class="app-layout">
+  
+  <!-- BARRA LATERAL (SIDEBAR) -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="logo-box">
+        <mat-icon>build_circle</mat-icon>
+      </div>
+      <div>
+        <div class="brand-title">DC-TI</div>
+        <div class="brand-sub">Corporate Support</div>
+      </div>
+    </div>
+
+    <nav class="nav-menu">
+      <div class="nav-section-title">Módulos do Sistema</div>
+
+      <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">
+        <mat-icon class="nav-icon">speed</mat-icon>
+        <div class="nav-labels">
+          <span class="nav-name">Visão Geral</span>
+          <span class="nav-desc">Score e diagnósticos</span>
+        </div>
+      </a>
+
+      <a routerLink="/ai-assistant" routerLinkActive="active" class="nav-item ai-nav-item">
+        <mat-icon class="nav-icon ai-nav-icon">smart_toy</mat-icon>
+        <div class="nav-labels">
+          <span class="nav-name ai-nav-title">Suporte IA (MCP)</span>
+          <span class="nav-desc">Reparo Autônomo</span>
+        </div>
+      </a>
+
+      <a routerLink="/hostname" routerLinkActive="active" class="nav-item">
+        <mat-icon class="nav-icon">badge</mat-icon>
+        <div class="nav-labels">
+          <span class="nav-name">Hostname</span>
+          <span class="nav-desc">Registro e DNS</span>
+        </div>
+      </a>
+
+      <a routerLink="/users" routerLinkActive="active" class="nav-item">
+        <mat-icon class="nav-icon">manage_accounts</mat-icon>
+        <div class="nav-labels">
+          <span class="nav-name">Usuários Locais</span>
+          <span class="nav-desc">Gerenciamento NetAPI</span>
+        </div>
+      </a>
+
+      <a routerLink="/storage" routerLinkActive="active" class="nav-item">
+        <mat-icon class="nav-icon">storage</mat-icon>
+        <div class="nav-labels">
+          <span class="nav-name">Discos & NVMe</span>
+          <span class="nav-desc">Telemetria SMART WMI</span>
+        </div>
+      </a>
+
+      <a routerLink="/cleanup" routerLinkActive="active" class="nav-item">
+        <mat-icon class="nav-icon">cleaning_services</mat-icon>
+        <div class="nav-labels">
+          <span class="nav-name">Limpeza Expressa</span>
+          <span class="nav-desc">Remoção de temporários</span>
+        </div>
+      </a>
+
+      <a routerLink="/repair" routerLinkActive="active" class="nav-item">
+        <mat-icon class="nav-icon">handyman</mat-icon>
+        <div class="nav-labels">
+          <span class="nav-name">Reparo do Sistema</span>
+          <span class="nav-desc">SFC, DISM, Spooler</span>
+        </div>
+      </a>
+
+      <a routerLink="/toolkit" routerLinkActive="active" class="nav-item">
+        <mat-icon class="nav-icon">build</mat-icon>
+        <div class="nav-labels">
+          <span class="nav-name">Otimização & Toolkit</span>
+          <span class="nav-desc">Rede, Boot, BSOD e Stress</span>
+        </div>
+      </a>
+
+      <a routerLink="/email" routerLinkActive="active" class="nav-item">
+        <mat-icon class="nav-icon">mail</mat-icon>
+        <div class="nav-labels">
+          <span class="nav-name">E-mail Outlook</span>
+          <span class="nav-desc">Configuração corporativa</span>
+        </div>
+      </a>
+
+      <a routerLink="/service-order" routerLinkActive="active" class="nav-item">
+        <mat-icon class="nav-icon">description</mat-icon>
+        <div class="nav-labels">
+          <span class="nav-name">Ordem de Serviço</span>
+          <span class="nav-desc">Exportação MD / TXT</span>
+        </div>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="engine-badge">
+        <mat-icon style="font-size: 14px;">terminal</mat-icon>
+        <span>Rust Core v2.0 (Active)</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ÁREA PRINCIPAL -->
+  <main class="main-content">
+    <router-outlet></router-outlet>
+  </main>
+
+</div>

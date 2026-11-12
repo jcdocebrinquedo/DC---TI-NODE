@@ -1,0 +1,78 @@
+<div class="page-container">
+
+  <!-- GRUPO 1: CABEÇALHO -->
+  <div class="group-panel">
+    <div class="page-header">
+      <div class="header-main">
+        <div class="page-title-icon">
+          <mat-icon>manage_accounts</mat-icon>
+        </div>
+        <div class="page-title-box">
+          <h1>Gerenciamento de Usuários Locais (NetAPI Win32)</h1>
+          <div class="page-subtitle">
+            Auditoria e renomeação de contas locais do Windows (Username e Nome Completo)
+          </div>
+        </div>
+      </div>
+      <div>
+        <button type="button" class="btn-refresh" (click)="carregarUsuarios()" [disabled]="loadingList">
+          <mat-icon *ngIf="!loadingList">refresh</mat-icon>
+          <mat-progress-spinner *ngIf="loadingList" mode="indeterminate" diameter="16"></mat-progress-spinner>
+          <span>Atualizar Lista</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GRUPO 2: LISTA DE USUÁRIOS E EDIÇÃO -->
+  <div class="group-panel panel-expand">
+    <div class="users-layout">
+      <!-- Coluna da Esquerda: Lista de Usuários -->
+      <div class="users-list">
+        <div class="list-title">Contas Locais Registradas</div>
+        <div
+          *ngFor="let u of users"
+          class="user-card"
+          [class.active]="selectedUser?.username === u.username"
+          (click)="selecionarUsuario(u)"
+        >
+          <div class="user-avatar">
+            <mat-icon>person</mat-icon>
+          </div>
+          <div class="user-meta">
+            <div class="user-name">
+              {{ u.username }}
+              <span *ngIf="u.is_current_user" class="current-tag">(Sessão Atual)</span>
+            </div>
+            <div class="user-full">{{ u.full_name || 'Sem nome completo definido' }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Coluna da Direita: Formulário de Edição -->
+      <div class="user-form" *ngIf="selectedUser">
+        <div class="form-title">Modificar Conta: <strong>{{ selectedUser.username }}</strong></div>
+        
+        <div class="field-box">
+          <label>Nome de Logon (Username):</label>
+          <input type="text" [(ngModel)]="newUsername" class="custom-input" />
+        </div>
+
+        <div class="field-box">
+          <label>Nome de Exibição Completo (Full Name):</label>
+          <input type="text" [(ngModel)]="newFullName" class="custom-input" />
+        </div>
+
+        <div class="action-box">
+          <button type="button" class="btn-save" (click)="salvarAlteracoes()" [disabled]="loadingUpdate">
+            <mat-progress-spinner *ngIf="loadingUpdate" mode="indeterminate" diameter="18"></mat-progress-spinner>
+            <mat-icon *ngIf="!loadingUpdate">save</mat-icon>
+            <span>Salvar Alterações</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+

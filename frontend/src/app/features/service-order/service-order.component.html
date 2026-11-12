@@ -1,0 +1,86 @@
+<div class="page-container">
+
+  <!-- GRUPO 1: CABEÇALHO -->
+  <div class="group-panel">
+    <div class="page-header">
+      <div class="header-main">
+        <div class="page-title-icon">
+          <mat-icon>description</mat-icon>
+        </div>
+        <div class="page-title-box">
+          <h1>Emissão de Ordem de Serviço Interna (TI)</h1>
+          <div class="page-subtitle">
+            Consolidação técnica e exportação formal em Markdown (.md) e Texto Puro (.txt)
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GRUPO 2: DADOS BÁSICOS DO ATENDIMENTO -->
+  <div class="group-panel">
+    <div class="card-header">
+      <mat-icon class="section-icon color-blue">assignment_ind</mat-icon>
+      <h3>Identificação do Atendimento Técnico</h3>
+    </div>
+
+    <div class="form-grid">
+      <div class="field-item">
+        <label>Nome da Estação (Hostname):</label>
+        <input type="text" [(ngModel)]="stationName" placeholder="Informe o nome da máquina..." class="custom-input font-mono" />
+      </div>
+
+      <div class="field-item">
+        <label>Técnico Responsável:</label>
+        <input type="text" [(ngModel)]="technicianName" placeholder="Nome do técnico responsável..." class="custom-input" />
+      </div>
+
+      <div class="field-item">
+        <label>Usuário Solicitante:</label>
+        <input type="text" [(ngModel)]="userName" placeholder="Nome do usuário solicitante..." class="custom-input" />
+      </div>
+    </div>
+  </div>
+
+  <!-- GRUPO 3: AÇÕES REALIZADAS (EXPANSÃO VERTICAL) -->
+  <div class="group-panel panel-expand">
+    <div class="card-header">
+      <mat-icon class="section-icon color-blue">checklist</mat-icon>
+      <h3>Ações e Procedimentos Executados</h3>
+    </div>
+
+    <div class="add-action-box">
+      <input
+        type="text"
+        [(ngModel)]="newAction"
+        placeholder="Descreva uma ação técnica realizada..."
+        class="custom-input action-input"
+        (keyup.enter)="adicionarAcao()"
+      />
+      <button type="button" class="btn-add" (click)="adicionarAcao()">
+        <mat-icon>add</mat-icon>
+        <span>Adicionar</span>
+      </button>
+    </div>
+
+    <div class="actions-list">
+      <div *ngFor="let act of actions; let i = index" class="action-item">
+        <div class="action-index">{{ i + 1 }}.</div>
+        <div class="action-text">{{ act }}</div>
+        <button type="button" class="btn-remove" (click)="removerAcao(i)" title="Remover">
+          <mat-icon>delete_outline</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <div class="action-bar">
+      <button type="button" class="btn-generate" (click)="gerarOrdemServico()" [disabled]="loadingGenerate">
+        <mat-progress-spinner *ngIf="loadingGenerate" mode="indeterminate" diameter="18"></mat-progress-spinner>
+        <mat-icon *ngIf="!loadingGenerate">print</mat-icon>
+        <span>{{ loadingGenerate ? 'Gerando documentos...' : 'Gerar Ordem de Serviço (.md / .txt)' }}</span>
+      </button>
+    </div>
+  </div>
+
+</div>
+

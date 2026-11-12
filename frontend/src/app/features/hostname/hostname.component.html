@@ -1,0 +1,97 @@
+<div class="page-container">
+
+  <!-- GRUPO 1: TÍTULO DA PÁGINA COM ÍCONE -->
+  <div class="group-panel">
+    <div class="page-header">
+      <div class="header-main">
+        <div class="page-title-icon">
+          <mat-icon>badge</mat-icon>
+        </div>
+        <div class="page-title-box">
+          <h1>Identificação da Estação & Hostname (HKLM)</h1>
+          <div class="page-subtitle">
+            Gerenciamento do nome do computador no Registro do Windows e sincronização Win32 DNS
+          </div>
+        </div>
+      </div>
+      <div>
+        <button type="button" class="btn-refresh" (click)="carregarDados()" [disabled]="loadingCarregar">
+          <mat-icon *ngIf="!loadingCarregar">refresh</mat-icon>
+          <mat-progress-spinner *ngIf="loadingCarregar" mode="indeterminate" diameter="16"></mat-progress-spinner>
+          <span>Atualizar</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GRUPO 2: INFORMAÇÕES ATUAIS -->
+  <div class="group-panel">
+    <div class="card-header">
+      <mat-icon class="section-icon color-blue">info</mat-icon>
+      <h3>Parâmetros de Rede e Registro Atuais</h3>
+    </div>
+
+    <div class="info-grid" *ngIf="info">
+      <div class="info-item">
+        <span class="label">Nome Ativo da Estação:</span>
+        <span class="value font-mono">{{ info.active_name }}</span>
+      </div>
+      <div class="info-item">
+        <span class="label">Nome Configurado no HKLM:</span>
+        <span class="value font-mono">{{ info.configured_name }}</span>
+      </div>
+      <div class="info-item">
+        <span class="label">Hostname TCP/IP (NV):</span>
+        <span class="value font-mono">{{ info.nv_hostname }}</span>
+      </div>
+      <div class="info-item">
+        <span class="label">Domínio / Workgroup:</span>
+        <span class="value">{{ info.domain }}</span>
+      </div>
+      <div class="info-item col-span-2" *ngIf="info.pending_reboot_change">
+        <span class="badge badge-warning">
+          <mat-icon style="font-size: 16px;">warning</mat-icon>
+          Há uma alteração de Hostname pendente de reinicialização para entrar em vigor na rede!
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- GRUPO 3: FORMULÁRIO DE ALTERAÇÃO (EXPANSÃO VERTICAL) -->
+  <div class="group-panel panel-expand">
+    <div class="card-header">
+      <mat-icon class="section-icon color-blue">edit</mat-icon>
+      <h3>Alterar Hostname no Registro do Windows</h3>
+    </div>
+
+    <div class="form-body">
+      <div class="input-group">
+        <label>Novo Nome da Máquina (Máx. 15 caracteres NetBIOS):</label>
+        <div class="input-row">
+          <input
+            type="text"
+            maxlength="15"
+            [(ngModel)]="newHostname"
+            placeholder="Ex: ESTACAO-TI-01"
+            class="hostname-input"
+          />
+          <button
+            type="button"
+            class="btn-save"
+            (click)="alterarHostname()"
+            [disabled]="loadingAlterar || !newHostname.trim()"
+          >
+            <mat-progress-spinner *ngIf="loadingAlterar" mode="indeterminate" diameter="18"></mat-progress-spinner>
+            <mat-icon *ngIf="!loadingAlterar">save</mat-icon>
+            <span>{{ loadingAlterar ? 'Gravando no HKLM...' : 'Salvar Alteração' }}</span>
+          </button>
+        </div>
+      </div>
+      <p class="help-text">
+        Esta operação grava em <code>HKLM\System\CurrentControlSet\Control\ComputerName</code> e chama a API <code>SetComputerNameExW</code> via core nativo Rust com token elevado UAC.
+      </p>
+    </div>
+  </div>
+
+</div>
+

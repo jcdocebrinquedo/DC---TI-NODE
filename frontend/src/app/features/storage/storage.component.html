@@ -1,0 +1,119 @@
+<div class="page-container">
+
+  <!-- GRUPO 1: CABEÇALHO DA PÁGINA -->
+  <div class="group-panel">
+    <div class="page-header">
+      <div class="header-main">
+        <div class="page-title-icon">
+          <mat-icon>storage</mat-icon>
+        </div>
+        <div class="page-title-box">
+          <h1>Saúde de Discos & NVMe (SMART via WMI / IOCTL)</h1>
+          <div class="page-subtitle">
+            Telemetria de armazenamento físico, desgaste de células flash e predição de falhas
+          </div>
+        </div>
+      </div>
+      <div>
+        <button type="button" class="btn-refresh" (click)="carregarDiscos()" [disabled]="loading">
+          <mat-icon *ngIf="!loading">refresh</mat-icon>
+          <mat-progress-spinner *ngIf="loading" mode="indeterminate" diameter="16"></mat-progress-spinner>
+          <span>Atualizar Discos</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GRUPO 2: STATUS GLOBAL & TRIM -->
+  <div class="group-panel" *ngIf="report">
+    <div class="card-header">
+      <mat-icon class="section-icon color-blue">speed</mat-icon>
+      <h3>Resumo do Subsistema de Armazenamento</h3>
+    </div>
+    <div class="summary-cards">
+      <div class="summary-box">
+        <span class="box-label">Status Global:</span>
+        <span class="badge" [ngClass]="report.has_critical_failure ? 'badge-danger' : 'badge-success'">
+          <mat-icon style="font-size: 14px;">{{ report.has_critical_failure ? 'error' : 'check_circle' }}</mat-icon>
+          {{ report.overall_status }}
+        </span>
+      </div>
+      <div class="summary-box">
+        <span class="box-label">Otimização NTFS TRIM:</span>
+        <span class="badge" [ngClass]="report.trim_enabled ? 'badge-success' : 'badge-warning'">
+          {{ report.trim_enabled ? 'ATIVADO' : 'DESATIVADO' }}
+        </span>
+      </div>
+      <div class="summary-box">
+        <span class="box-label">Última Varredura (Horário Local):</span>
+        <span class="font-mono text-sm">{{ report.collected_at_local }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- GRUPO 3: TABELA DE DISCOS (EXPANSÃO VERTICAL CONFORME A QUANTIDADE DE ITENS) -->
+  <div class="group-panel panel-expand">
+    <div class="card-header">
+      <mat-icon class="section-icon color-blue">dns</mat-icon>
+      <h3>Unidades Físicas Identificadas</h3>
+    </div>
+
+    <div *ngIf="loading" class="loading-state">
+      <mat-progress-spinner mode="indeterminate" diameter="36"></mat-progress-spinner>
+      <span>Varrendo barramento de armazenamento e registradores SMART...</span>
+    </div>
+
+    <div class="table-responsive" *ngIf="!loading && report && report.disks.length > 0">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Modelo & Interface</th>
+            <th>Tipo</th>
+            <th>Capacidade</th>
+            <th>Saúde / Score</th>
+            <th>Temperatura</th>
+            <th>Desgaste Flash</th>
+            <th>Horas Ligado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let d of report.disks">
+            <td class="font-mono font-bold">#{{ d.index }}</td>
+            <td>
+              <div class="disk-model">{{ d.model }}</div>
+              <div class="disk-sub text-muted font-mono">Serial: {{ d.serial_number || 'N/A' }} | {{ d.interface_type }}</div>
+            </td>
+            <td>
+              <span class="badge" [ngClass]="d.is_ssd ? 'badge-info' : 'badge-warning'">
+                {{ d.is_ssd ? 'SSD / NVMe' : 'HDD Mecânico' }}
+              </span>
+            </td>
+            <td class="font-mono">{{ d.size_gb.toFixed(2) }} GB</td>
+            <td>
+              <span class="badge" [ngClass]="d.health_score >= 80 ? 'badge-success' : (d.health_score >= 60 ? 'badge-warning' : 'badge-danger')">
+                {{ d.health_score }}/100 — {{ d.health_verdict }}
+              </span>
+            </td>
+            <td class="font-mono">
+              {{ d.temperature_celsius ? d.temperature_celsius + ' °C' : 'N/D' }}
+            </td>
+            <td class="font-mono">
+              {{ d.wear_level_percent !== null && d.wear_level_percent !== undefined ? d.wear_level_percent + '%' : 'N/D' }}
+            </td>
+            <td class="font-mono">
+              {{ d.power_on_hours ? d.power_on_hours + ' h' : 'N/D' }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div *ngIf="!loading && (!report || report.disks.length === 0)" class="empty-state">
+      <mat-icon style="font-size: 36px; color: #94a3b8;">device_unknown</mat-icon>
+      <p>Nenhuma unidade de disco detectada via WMI/Win32.</p>
+    </div>
+  </div>
+
+</div>
+

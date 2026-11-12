@@ -1,0 +1,53 @@
+{
+  "name": "dc-ti-backend",
+  "version": "2.0.0",
+  "private": true,
+  "description": "DC-TI Backend Node.js: API local (Express), orquestração de regras de negócio e ponte com o core nativo Rust (dc-core.exe)",
+  "main": "src/electron/main.js",
+  "author": "Engenharia de Sistemas Corporativos - TI",
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js",
+    "electron": "electron .",
+    "dist": "electron-builder --win --x64"
+  },
+  "dependencies": {
+    "docx": "^9.15.3",
+    "express": "^5.3.0",
+    "pdfkit": "^0.17.2"
+  },
+  "devDependencies": {
+    "electron": "^45.3.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "br.corporativo.dcti.support",
+    "productName": "DC-TI Support",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "public/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "bin/dc-core.exe",
+        "to": "bin/dc-core.exe"
+      }
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "requestedExecutionLevel": "requireAdministrator"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": true
+    }
+  }
+}

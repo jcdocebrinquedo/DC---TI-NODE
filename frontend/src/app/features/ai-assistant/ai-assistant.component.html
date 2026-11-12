@@ -1,0 +1,138 @@
+<div class="page-container">
+
+  <!-- GRUPO 1: CABEÇALHO -->
+  <div class="group-panel">
+    <div class="page-header">
+      <div class="header-main">
+        <div class="page-title-icon ai-icon-bg">
+          <mat-icon>smart_toy</mat-icon>
+        </div>
+        <div class="page-title-box">
+          <h1>Suporte Autônomo com IA (Doce LLM Gateway + MCP)</h1>
+          <div class="page-subtitle">
+            Agente inteligente com acesso total ao sistema operacional para diagnósticos, manutenções e reparos automatizados
+          </div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <!-- BOTÃO TOGGLE ADMIN (CLICÁVEL: TRUE / FALSE) -->
+        <button
+          type="button"
+          class="admin-toggle-btn"
+          [ngClass]="adminElevated ? 'admin-active' : 'admin-inactive'"
+          (click)="alternarAdmin()"
+          [disabled]="loadingAdmin"
+          [title]="adminElevated ? 'Privilégios de Administrador ATIVOS (admin_elevated: true). Clique para mudar para FALSE.' : 'Privilégios de Administrador INATIVOS (admin_elevated: false). Clique para mudar para TRUE.'"
+        >
+          <mat-progress-spinner *ngIf="loadingAdmin" mode="indeterminate" diameter="16"></mat-progress-spinner>
+          <mat-icon *ngIf="!loadingAdmin">{{ adminElevated ? 'verified_user' : 'gpp_maybe' }}</mat-icon>
+          <span class="toggle-label">Admin:</span>
+          <span class="toggle-status-badge" [ngClass]="adminElevated ? 'status-true' : 'status-false'">
+            {{ adminElevated ? 'TRUE' : 'FALSE' }}
+          </span>
+          <span class="toggle-hint">({{ adminElevated ? 'clique p/ false' : 'clique p/ true' }})</span>
+        </button>
+
+        <button type="button" class="btn-settings" (click)="showSettings = !showSettings">
+          <mat-icon>tune</mat-icon>
+          <span>{{ showSettings ? 'Fechar Configurações' : 'Configurar Gateway' }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GRUPO CONFIGURAÇÃO DO GATEWAY (EXPANSÍVEL) -->
+  <div class="group-panel" *ngIf="showSettings">
+    <div class="card-header">
+      <mat-icon class="section-icon color-blue">hub</mat-icon>
+      <h3>Parâmetros de Conexão — Doce LLM Gateway</h3>
+    </div>
+
+    <div class="form-grid">
+      <div class="field-item">
+        <label>URL do Doce LLM Gateway:</label>
+        <input type="text" [(ngModel)]="config.gatewayUrl" placeholder="http://localhost:3000" class="custom-input font-mono" />
+      </div>
+
+      <div class="field-item">
+        <label>Bearer Token de Autenticação (Aplicação):</label>
+        <input type="password" [(ngModel)]="config.apiKey" placeholder="doce_app_..." class="custom-input font-mono" />
+      </div>
+
+      <div class="field-item">
+        <label>Provedor de LLM:</label>
+        <select [(ngModel)]="config.provider" class="custom-input">
+          <option value="GEMINI">Google Gemini</option>
+          <option value="OPENAI">OpenAI</option>
+          <option value="ANTHROPIC">Anthropic</option>
+          <option value="GROQ">Groq Cloud</option>
+          <option value="XAI">xAI</option>
+        </select>
+      </div>
+
+      <div class="field-item">
+        <label>Modelo:</label>
+        <input type="text" [(ngModel)]="config.model" placeholder="gemini-2.5-flash ou gpt-4o" class="custom-input font-mono" />
+      </div>
+    </div>
+
+    <div class="action-bar">
+      <button type="button" class="btn-save" (click)="salvarConfig()" [disabled]="loadingConfig">
+        <mat-progress-spinner *ngIf="loadingConfig" mode="indeterminate" diameter="16"></mat-progress-spinner>
+        <mat-icon *ngIf="!loadingConfig">save</mat-icon>
+        <span>Salvar Configuração</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- GRUPO PRINCIPAL: CHAT & TERMINAL INTERATIVO (EXPANDE VERTICALMENTE) -->
+  <div class="group-panel panel-expand">
+    <div class="chat-wrapper">
+      
+      <!-- Histórico de Mensagens -->
+      <div class="messages-container">
+        <div *ngFor="let m of messages" class="message-bubble" [ngClass]="m.role === 'user' ? 'user-bubble' : 'assistant-bubble'">
+          <div class="message-header">
+            <mat-icon class="bubble-icon">{{ m.role === 'user' ? 'account_circle' : 'smart_toy' }}</mat-icon>
+            <span class="bubble-sender">{{ m.role === 'user' ? 'Técnico / Usuário' : 'Agente DC-TI (MCP Autônomo)' }}</span>
+          </div>
+          <div class="message-body" [innerHTML]="formatContent(m.content)"></div>
+        </div>
+
+        <div *ngIf="loading" class="loading-bubble">
+          <mat-progress-spinner mode="indeterminate" diameter="22"></mat-progress-spinner>
+          <span>O Agente de IA está analisando a solicitação e executando ações no Windows...</span>
+        </div>
+      </div>
+
+      <!-- Atalhos Rápidos -->
+      <div class="quick-actions-bar">
+        <div class="quick-title">Sugestões de Manutenção:</div>
+        <div class="quick-tags">
+          <button *ngFor="let q of quickActions" type="button" class="tag-btn" (click)="enviarMensagem(q)" [disabled]="loading">
+            {{ q }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Input de Envio -->
+      <div class="chat-input-bar">
+        <textarea
+          [(ngModel)]="userInput"
+          placeholder="Descreva o problema ou o que deseja que o agente faça no computador..."
+          class="chat-textarea"
+          (keydown.enter)="$event.preventDefault(); enviarMensagem()"
+          [disabled]="loading"
+          rows="2"
+        ></textarea>
+        <button type="button" class="btn-send" (click)="enviarMensagem()" [disabled]="loading || !userInput.trim()">
+          <mat-icon>send</mat-icon>
+          <span>Executar</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+

@@ -1,0 +1,354 @@
+<div class="page-container">
+
+  <!-- GRUPO 1: CABEÇALHO -->
+  <div class="group-panel">
+    <div class="page-header">
+      <div class="header-main">
+        <div class="page-title-icon toolkit-icon-bg">
+          <mat-icon>build</mat-icon>
+        </div>
+        <div class="page-title-box">
+          <h1>Central de Otimização & Diagnósticos Avançados</h1>
+          <div class="page-subtitle">
+            Ferramentas profissionais de rede, segurança, inicialização, estresse de CPU e análise de falhas
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ABAS DE NAVEGAÇÃO RESPONSIVAS -->
+    <div class="toolkit-nav">
+      <button type="button" class="tab-btn" [class.active]="activeTab === 'network'" (click)="setTab('network')">
+        <mat-icon>lan</mat-icon>
+        <span>Network Doctor</span>
+      </button>
+      <button type="button" class="tab-btn" [class.active]="activeTab === 'security'" (click)="setTab('security')">
+        <mat-icon>security</mat-icon>
+        <span>Auditoria de Segurança</span>
+      </button>
+      <button type="button" class="tab-btn" [class.active]="activeTab === 'startup'" (click)="setTab('startup')">
+        <mat-icon>rocket_launch</mat-icon>
+        <span>Programas de Boot</span>
+      </button>
+      <button type="button" class="tab-btn" [class.active]="activeTab === 'crashes'" (click)="setTab('crashes')">
+        <mat-icon>bug_report</mat-icon>
+        <span>Telas Azuis (BSOD)</span>
+      </button>
+      <button type="button" class="tab-btn" [class.active]="activeTab === 'stress'" (click)="setTab('stress')">
+        <mat-icon>bolt</mat-icon>
+        <span>Stress Test (CPU)</span>
+      </button>
+      <button type="button" class="tab-btn" [class.active]="activeTab === 'backup'" (click)="setTab('backup')">
+        <mat-icon>folder_zip</mat-icon>
+        <span>Backup Expresso</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- CONTEÚDO 1: NETWORK DOCTOR -->
+  <div class="group-panel panel-expand" *ngIf="activeTab === 'network'">
+    <div class="card-header">
+      <div class="header-title-row">
+        <mat-icon class="section-icon color-blue">lan</mat-icon>
+        <h3>Diagnóstico de Conectividade & Resolução DNS</h3>
+      </div>
+      <button type="button" class="btn-refresh" (click)="carregarNetwork()" [disabled]="loadingNetwork">
+        <mat-progress-spinner *ngIf="loadingNetwork" mode="indeterminate" diameter="16"></mat-progress-spinner>
+        <mat-icon *ngIf="!loadingNetwork">refresh</mat-icon>
+        <span>Atualizar Testes</span>
+      </button>
+    </div>
+
+    <div *ngIf="loadingNetwork" class="loading-state">
+      <mat-progress-spinner mode="indeterminate" diameter="28"></mat-progress-spinner>
+      <span>Medindo latência de ping e resolução de rotas...</span>
+    </div>
+
+    <div *ngIf="!loadingNetwork && networkData" class="content-body">
+      <div class="cards-grid">
+        <div class="info-card">
+          <div class="card-label">Status da Conexão</div>
+          <div class="card-value" [ngClass]="networkData.internet_active ? 'text-success' : 'text-danger'">
+            <mat-icon>{{ networkData.internet_active ? 'wifi' : 'wifi_off' }}</mat-icon>
+            <span>{{ networkData.internet_active ? 'Internet Ativa' : 'Sem Acesso à Internet' }}</span>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <div class="card-label">Resolução DNS (google.com)</div>
+          <div class="card-value" [ngClass]="networkData.dns_resolution.reachable ? 'text-success' : 'text-danger'">
+            <mat-icon>{{ networkData.dns_resolution.reachable ? 'check_circle' : 'cancel' }}</mat-icon>
+            <span>{{ networkData.dns_resolution.reachable ? (networkData.dns_resolution.latency_ms + ' ms') : 'Falha' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Destino / Teste</th>
+              <th>Host</th>
+              <th>Status</th>
+              <th>Latência (ms)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let t of networkData.tests">
+              <td class="font-bold">{{ t.target }}</td>
+              <td class="font-mono">{{ t.host }}</td>
+              <td>
+                <span class="badge" [ngClass]="t.reachable ? 'badge-success' : 'badge-danger'">
+                  {{ t.reachable ? 'Acessível' : 'Inacessível' }}
+                </span>
+              </td>
+              <td class="font-mono">{{ t.reachable ? (t.latency_ms + ' ms') : '-' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTEÚDO 2: AUDITORIA DE SEGURANÇA -->
+  <div class="group-panel panel-expand" *ngIf="activeTab === 'security'">
+    <div class="card-header">
+      <div class="header-title-row">
+        <mat-icon class="section-icon color-blue">security</mat-icon>
+        <h3>Auditoria de Segurança & Conformidade Local</h3>
+      </div>
+      <button type="button" class="btn-refresh" (click)="carregarSecurity()" [disabled]="loadingSecurity">
+        <mat-progress-spinner *ngIf="loadingSecurity" mode="indeterminate" diameter="16"></mat-progress-spinner>
+        <mat-icon *ngIf="!loadingSecurity">refresh</mat-icon>
+        <span>Auditar Novamente</span>
+      </button>
+    </div>
+
+    <div *ngIf="loadingSecurity" class="loading-state">
+      <mat-progress-spinner mode="indeterminate" diameter="28"></mat-progress-spinner>
+      <span>Inspecionando Windows Defender, Firewall e BitLocker...</span>
+    </div>
+
+    <div *ngIf="!loadingSecurity && securityData" class="cards-grid">
+      <div class="info-card">
+        <div class="card-label">Windows Defender (Tempo Real)</div>
+        <div class="card-value" [ngClass]="securityData.defender_active ? 'text-success' : 'text-danger'">
+          <mat-icon>{{ securityData.defender_active ? 'verified_user' : 'warning' }}</mat-icon>
+          <span>{{ securityData.defender_active ? 'Proteção Ativa' : 'Desativado' }}</span>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="card-label">Assinaturas de Antivírus</div>
+        <div class="card-value" [ngClass]="securityData.defender_updated ? 'text-success' : 'text-warning'">
+          <mat-icon>{{ securityData.defender_updated ? 'check_circle' : 'update' }}</mat-icon>
+          <span>{{ securityData.defender_updated ? 'Atualizadas (< 7 dias)' : 'Desatualizadas' }}</span>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="card-label">Firewall do Windows</div>
+        <div class="card-value" [ngClass]="securityData.firewall_active ? 'text-success' : 'text-danger'">
+          <mat-icon>{{ securityData.firewall_active ? 'local_fire_department' : 'gpp_bad' }}</mat-icon>
+          <span>{{ securityData.firewall_active ? 'Perfis Ativos' : 'Desligado' }}</span>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="card-label">Criptografia BitLocker (Disco C:)</div>
+        <div class="card-value">
+          <mat-icon>lock</mat-icon>
+          <span>{{ securityData.bitlocker_status }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTEÚDO 3: PROGRAMAS DE BOOT -->
+  <div class="group-panel panel-expand" *ngIf="activeTab === 'startup'">
+    <div class="card-header">
+      <div class="header-title-row">
+        <mat-icon class="section-icon color-blue">rocket_launch</mat-icon>
+        <h3>Programas de Inicialização Automática (Registro)</h3>
+      </div>
+      <button type="button" class="btn-refresh" (click)="carregarStartup()" [disabled]="loadingStartup">
+        <mat-progress-spinner *ngIf="loadingStartup" mode="indeterminate" diameter="16"></mat-progress-spinner>
+        <mat-icon *ngIf="!loadingStartup">refresh</mat-icon>
+        <span>Atualizar Lista</span>
+      </button>
+    </div>
+
+    <div *ngIf="loadingStartup" class="loading-state">
+      <mat-progress-spinner mode="indeterminate" diameter="28"></mat-progress-spinner>
+      <span>Varrendo chaves HKLM e HKCU Run...</span>
+    </div>
+
+    <div *ngIf="!loadingStartup" class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Nome do Aplicativo</th>
+            <th>Escopo</th>
+            <th>Comando / Executável</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of startupList">
+            <td class="font-bold">{{ item.name }}</td>
+            <td><span class="badge badge-info">{{ item.location }}</span></td>
+            <td class="font-mono text-muted text-small">{{ item.command }}</td>
+          </tr>
+          <tr *ngIf="startupList.length === 0">
+            <td colspan="3" class="text-center text-muted">Nenhum programa de inicialização encontrado no registro.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- CONTEÚDO 4: TELAS AZUIS (BSOD) -->
+  <div class="group-panel panel-expand" *ngIf="activeTab === 'crashes'">
+    <div class="card-header">
+      <div class="header-title-row">
+        <mat-icon class="section-icon color-blue">bug_report</mat-icon>
+        <h3>Análise de Telas Azuis (Minidumps) & Eventos Críticos</h3>
+      </div>
+      <button type="button" class="btn-refresh" (click)="carregarCrashes()" [disabled]="loadingCrashes">
+        <mat-progress-spinner *ngIf="loadingCrashes" mode="indeterminate" diameter="16"></mat-progress-spinner>
+        <mat-icon *ngIf="!loadingCrashes">refresh</mat-icon>
+        <span>Inspecionar Dumps</span>
+      </button>
+    </div>
+
+    <div *ngIf="loadingCrashes" class="loading-state">
+      <mat-progress-spinner mode="indeterminate" diameter="28"></mat-progress-spinner>
+      <span>Inspecionando diretório C:\Windows\Minidump e Event Viewer...</span>
+    </div>
+
+    <div *ngIf="!loadingCrashes && crashData" class="content-body">
+      <div class="cards-grid">
+        <div class="info-card">
+          <div class="card-label">Arquivos Minidump Detectados</div>
+          <div class="card-value" [ngClass]="crashData.has_dumps ? 'text-danger' : 'text-success'">
+            <mat-icon>{{ crashData.has_dumps ? 'report_problem' : 'task_alt' }}</mat-icon>
+            <span>{{ crashData.dump_files.length }} dump(s) encontrados</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-responsive" *ngIf="crashData.dump_files.length > 0">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Arquivo de Dump</th>
+              <th>Tamanho</th>
+              <th>Data do Crash</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let d of crashData.dump_files">
+              <td class="font-mono font-bold">{{ d.file_name }}</td>
+              <td>{{ d.size_kb }} KB</td>
+              <td>{{ d.created_at }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div *ngIf="crashData.critical_events.length > 0" class="critical-events-box">
+        <div class="sub-title">Eventos Críticos Recentes do Sistema (Kernel-Power / EventLog):</div>
+        <div class="event-item" *ngFor="let ev of crashData.critical_events">
+          <mat-icon class="color-danger">error</mat-icon>
+          <div class="event-details">
+            <div class="event-header font-bold">Evento ID {{ ev.id }} — {{ ev.time }}</div>
+            <div class="event-msg text-small font-mono">{{ ev.message }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTEÚDO 5: STRESS TEST (CPU) -->
+  <div class="group-panel panel-expand" *ngIf="activeTab === 'stress'">
+    <div class="card-header">
+      <div class="header-title-row">
+        <mat-icon class="section-icon color-blue">bolt</mat-icon>
+        <h3>Teste de Estresse Rápido de CPU & Estabilidade Térmica</h3>
+      </div>
+    </div>
+
+    <div class="stress-box">
+      <p class="description-text">
+        O teste de estresse executa cálculos matemáticos intensivos simultaneamente em todos os núcleos lógicos da CPU
+        por 10 segundos, verificando a estabilidade de processamento e resposta sob carga máxima.
+      </p>
+
+      <button type="button" class="btn-stress-run" (click)="executarStressTest()" [disabled]="loadingStress">
+        <mat-progress-spinner *ngIf="loadingStress" mode="indeterminate" diameter="20"></mat-progress-spinner>
+        <mat-icon *ngIf="!loadingStress">play_arrow</mat-icon>
+        <span>{{ loadingStress ? 'Executando Teste (10s)...' : 'Iniciar Teste de Estresse (10s)' }}</span>
+      </button>
+
+      <div *ngIf="stressResult" class="stress-result-card">
+        <mat-icon class="color-success result-icon">verified</mat-icon>
+        <div class="result-info">
+          <div class="result-title">{{ stressResult.stability }}</div>
+          <div class="result-sub">
+            {{ stressResult.cpu_cores_tested }} núcleos testados | {{ stressResult.duration_seconds }} segundos |
+            {{ stressResult.operations_completed | number }} operações completadas com sucesso.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTEÚDO 6: BACKUP EXPRESSO -->
+  <div class="group-panel panel-expand" *ngIf="activeTab === 'backup'">
+    <div class="card-header">
+      <div class="header-title-row">
+        <mat-icon class="section-icon color-blue">folder_zip</mat-icon>
+        <h3>Estimativa & Inventário de Perfil para Backup</h3>
+      </div>
+      <button type="button" class="btn-refresh" (click)="carregarBackup()" [disabled]="loadingBackup">
+        <mat-progress-spinner *ngIf="loadingBackup" mode="indeterminate" diameter="16"></mat-progress-spinner>
+        <mat-icon *ngIf="!loadingBackup">refresh</mat-icon>
+        <span>Recalcular Tamanho</span>
+      </button>
+    </div>
+
+    <div *ngIf="loadingBackup" class="loading-state">
+      <mat-progress-spinner mode="indeterminate" diameter="28"></mat-progress-spinner>
+      <span>Calculando volume de Área de Trabalho, Documentos e Downloads...</span>
+    </div>
+
+    <div *ngIf="!loadingBackup && backupData" class="content-body">
+      <div class="profile-path-badge font-mono">
+        <mat-icon>person</mat-icon>
+        <span>Perfil: {{ backupData.user_profile }}</span>
+      </div>
+
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Pasta do Usuário</th>
+              <th>Caminho</th>
+              <th>Quantidade de Arquivos</th>
+              <th>Volume Estimado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let f of backupData.folders">
+              <td class="font-bold">{{ f.folder }}</td>
+              <td class="font-mono text-small">{{ f.path }}</td>
+              <td>{{ f.files_count }} arquivo(s)</td>
+              <td class="font-bold text-success">{{ f.size_mb }} MB</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+

@@ -1,0 +1,100 @@
+<div class="page-container">
+
+  <!-- GRUPO 1: CABEÇALHO -->
+  <div class="group-panel">
+    <div class="page-header">
+      <div class="header-main">
+        <div class="page-title-icon">
+          <mat-icon>build_circle</mat-icon>
+        </div>
+        <div class="page-title-box">
+          <h1>Reparo do Sistema & Automação de Integridade</h1>
+          <div class="page-subtitle">
+            Manutenção preventiva profunda: Spooler de Impressão, Pilha de Rede, SFC e Imagem DISM
+          </div>
+        </div>
+      </div>
+      <div>
+        <button type="button" class="btn-primary-suite" (click)="executarSuiteCompleta()" [disabled]="runningTask !== null">
+          <mat-progress-spinner *ngIf="runningTask === 'suite'" mode="indeterminate" diameter="16"></mat-progress-spinner>
+          <mat-icon *ngIf="runningTask !== 'suite'">auto_fix_high</mat-icon>
+          <span>Executar Suíte Completa</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GRUPO 2: BOTÕES INDIVIDUAIS DE REPARO -->
+  <div class="group-panel">
+    <div class="card-header">
+      <mat-icon class="section-icon color-blue">handyman</mat-icon>
+      <h3>Módulos de Correção Específicos</h3>
+    </div>
+
+    <div class="buttons-grid">
+      <button type="button" class="btn-repair" (click)="executarSpooler()" [disabled]="runningTask !== null">
+        <mat-progress-spinner *ngIf="runningTask === 'spooler'" mode="indeterminate" diameter="16"></mat-progress-spinner>
+        <mat-icon *ngIf="runningTask !== 'spooler'">print</mat-icon>
+        <span>Reparar Spooler de Impressão</span>
+      </button>
+
+      <button type="button" class="btn-repair" (click)="executarNetwork()" [disabled]="runningTask !== null">
+        <mat-progress-spinner *ngIf="runningTask === 'network'" mode="indeterminate" diameter="16"></mat-progress-spinner>
+        <mat-icon *ngIf="runningTask !== 'network'">wifi_protected_setup</mat-icon>
+        <span>Redefinir Rede & DNS</span>
+      </button>
+
+      <button type="button" class="btn-repair" (click)="executarSfc()" [disabled]="runningTask !== null">
+        <mat-progress-spinner *ngIf="runningTask === 'sfc'" mode="indeterminate" diameter="16"></mat-progress-spinner>
+        <mat-icon *ngIf="runningTask !== 'sfc'">fact_check</mat-icon>
+        <span>Verificação SFC (Integridade)</span>
+      </button>
+
+      <button type="button" class="btn-repair" (click)="executarDism()" [disabled]="runningTask !== null">
+        <mat-progress-spinner *ngIf="runningTask === 'dism'" mode="indeterminate" diameter="16"></mat-progress-spinner>
+        <mat-icon *ngIf="runningTask !== 'dism'">system_update_alt</mat-icon>
+        <span>Restauração DISM (Component Store)</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- GRUPO 3: HISTÓRICO DE TAREFAS EXECUTADAS (EXPANSÃO VERTICAL) -->
+  <div class="group-panel panel-expand">
+    <div class="card-header">
+      <mat-icon class="section-icon color-blue">history</mat-icon>
+      <h3>Histórico de Execuções e Diagnósticos</h3>
+    </div>
+
+    <div class="table-responsive" *ngIf="tasks.length > 0">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Status</th>
+            <th>Rotina Executada</th>
+            <th>Resultado / Sumário Técnico</th>
+            <th>Duração</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let t of tasks">
+            <td>
+              <span class="badge" [ngClass]="t.success ? 'badge-success' : 'badge-danger'">
+                {{ t.success ? 'ÊXITO' : 'FALHA' }}
+              </span>
+            </td>
+            <td class="font-bold">{{ t.task_name }}</td>
+            <td>{{ t.output_summary }}</td>
+            <td class="font-mono">{{ t.duration_seconds.toFixed(2) }}s</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div *ngIf="tasks.length === 0" class="empty-state">
+      <mat-icon style="font-size: 36px; color: #94a3b8;">construction</mat-icon>
+      <p>Nenhuma tarefa de reparo executada nesta sessão.</p>
+    </div>
+  </div>
+
+</div>
+
