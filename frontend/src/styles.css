@@ -56,15 +56,38 @@ html, body {
 }
 
 /* Scroll unificado na página inteira conforme diretriz angular_page_groups / angular_form_groups */
+router-outlet + * {
+  display: block;
+  width: 100%;
+  min-height: 100%;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
 .page-container {
-  padding: 24px 32px 40px;
+  padding: 24px 32px 60px;
   width: 100%;
   min-height: 100%;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
   gap: 18px;
-  overflow-y: auto;
 }
 
 .group-panel {

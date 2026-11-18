@@ -7,6 +7,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const { formatLocalDateTime } = require('../utils/local-date');
 const { AppError } = require('../utils/app-error');
+const mailAuthTester = require('./mail-auth-tester.service');
 
 const execFileAsync = promisify(execFile);
 const SCRIPT_PATH = path.resolve(__dirname, '../scripts/outlook-tools.ps1');
@@ -69,6 +70,31 @@ class OutlookConfigService {
   }
 
   /**
+   * Realiza teste prévio de autenticação real (logon POP3/IMAP e SMTP).
+   * @param {object} config
+   */
+  async testAuthentication(config) {
+    const {
+      email_address = '',
+      password = '',
+      incoming_server = '',
+      outgoing_server = ''
+    } = config;
+
+    if (!email_address || !email_address.includes('@')) {
+      throw new AppError('E_VALIDATION', 'Endereço de e-mail corporativo inválido.');
+    }
+    if (!password || password.trim().length === 0) {
+      throw new AppError('E_VALIDATION', 'A senha do e-mail é obrigatória para testar a autenticação.');
+    }
+    if (!incoming_server || !outgoing_server) {
+      throw new AppError('E_VALIDATION', 'Os servidores de entrada e saída são obrigatórios.');
+    }
+
+    return await mailAuthTester.testAll(config);
+  }
+
+  /**
    * Configura a conta corporativa de e-mail e seu Arquivo de Dados (.pst) no Microsoft Outlook.
    * @param {object} config
    */
@@ -87,7 +113,8 @@ class OutlookConfigService {
       outgoing_use_ssl = true,
       outgoing_require_auth = true,
       use_existing_pst = false,
-      existing_pst_path = ''
+      existing_pst_path = '',
+      skip_auth_test = false
     } = config;
 
     if (!email_address || !email_address.includes('@')) {
@@ -98,6 +125,18 @@ class OutlookConfigService {
     }
     if (!incoming_server || !outgoing_server) {
       throw new AppError('E_VALIDATION', 'Os servidores de entrada e saída são obrigatórios.');
+    }
+
+    // Validação de autenticação prévia idêntica ao Microsoft Outlook
+    if (!skip_auth_test) {
+      const authTest = await mailAuthTester.testAll(config);
+      if (!authTest.ok) {
+        throw new AppError(
+          'E_AUTH_FAILED',
+          `Falha no teste de autenticação da conta: ${authTest.error_message}. Verifique a senha ou os servidores e tente novamente.`,
+          authTest
+        );
+      }
     }
 
     const cleanDomain = domain

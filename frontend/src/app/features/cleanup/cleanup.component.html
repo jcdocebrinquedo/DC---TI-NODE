@@ -8,11 +8,18 @@
           <mat-icon>cleaning_services</mat-icon>
         </div>
         <div class="page-title-box">
-          <h1>Limpeza Expressa & Otimização de Espaço</h1>
+          <h1>Limpeza Avançada & Analisador de Espaço</h1>
           <div class="page-subtitle">
-            Remoção segura de temporários de usuário, Windows Temp, Prefetch e Flush de DNS
+            Remoção segura de temporários, caches de navegadores/Teams, WinSxS e mapeamento de pastas grandes
           </div>
         </div>
+      </div>
+      <div>
+        <button type="button" class="btn-clean" style="background: #0f766e;" (click)="analisarEspaco()" [disabled]="loadingAnalysis">
+          <mat-progress-spinner *ngIf="loadingAnalysis" mode="indeterminate" diameter="16"></mat-progress-spinner>
+          <mat-icon *ngIf="!loadingAnalysis">pie_chart</mat-icon>
+          <span>{{ loadingAnalysis ? 'Mapeando pastas...' : 'Analisar Espaço em C:\\' }}</span>
+        </button>
       </div>
     </div>
   </div>
@@ -45,19 +52,38 @@
         <input type="checkbox" [(ngModel)]="flushDns" />
         <span>Esvaziar Cache DNS Resolver (ipconfig /flushdns)</span>
       </label>
+      <label class="check-item">
+        <input type="checkbox" [(ngModel)]="cleanBrowserCache" />
+        <span>Cache de Navegadores (Chrome & Edge — preserva senhas/favoritos)</span>
+      </label>
+      <label class="check-item">
+        <input type="checkbox" [(ngModel)]="cleanTeamsCache" />
+        <span>Cache do Microsoft Teams</span>
+      </label>
+      <label class="check-item">
+        <input type="checkbox" [(ngModel)]="cleanWinSxS" />
+        <span>Limpeza de Componentes Windows (DISM /StartComponentCleanup)</span>
+      </label>
     </div>
 
     <div class="action-bar">
       <button type="button" class="btn-clean" (click)="executarLimpeza()" [disabled]="loading">
         <mat-progress-spinner *ngIf="loading" mode="indeterminate" diameter="18"></mat-progress-spinner>
         <mat-icon *ngIf="!loading">auto_delete</mat-icon>
-        <span>{{ loading ? 'Removendo arquivos temporários...' : 'Executar Limpeza Expressa' }}</span>
+        <span>{{ loading ? 'Removendo arquivos temporários...' : 'Executar Limpeza Selecionada' }}</span>
       </button>
+    </div>
+
+    <div *ngIf="loading || loadingAnalysis" style="margin-top: 14px;">
+      <div style="font-size: 12.5px; color: #1e3a8a; font-weight: 600; margin-bottom: 6px;">
+        {{ loading ? 'Executando limpeza selecionada (arquivos temporários, caches / WinSxS)...' : 'Mapeando consumo de espaço em C:\\...' }}
+      </div>
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
     </div>
   </div>
 
-  <!-- GRUPO 3: RELATÓRIO DA LIMPEZA (EXPANSÃO VERTICAL) -->
-  <div class="group-panel panel-expand" *ngIf="report">
+  <!-- GRUPO 3: RELATÓRIO DA LIMPEZA -->
+  <div class="group-panel" *ngIf="report">
     <div class="card-header">
       <mat-icon class="section-icon color-blue">task_alt</mat-icon>
       <h3>Relatório de Liberação de Disco</h3>
@@ -87,5 +113,33 @@
     </div>
   </div>
 
-</div>
+  <!-- GRUPO 4: ANALISADOR DE ESPAÇO EM DISCO -->
+  <div class="group-panel panel-expand" *ngIf="storageAnalysis">
+    <div class="card-header">
+      <mat-icon class="section-icon color-blue">folder_special</mat-icon>
+      <h3>Maiores Consumidores de Espaço em {{ storageAnalysis.drive }} ({{ storageAnalysis.analyzed_at_local }})</h3>
+    </div>
 
+    <div class="table-responsive">
+      <table class="data-table" style="width: 100%; border-collapse: collapse; font-size: 13px;">
+        <thead>
+          <tr style="background: #f8fafc; text-align: left;">
+            <th style="padding: 10px;">Pasta / Perfil</th>
+            <th style="padding: 10px;">Caminho</th>
+            <th style="padding: 10px;">Tamanho (MB)</th>
+            <th style="padding: 10px;">Tamanho (GB)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let f of storageAnalysis.folders" style="border-bottom: 1px solid #f1f5f9;">
+            <td style="padding: 10px; font-weight: 600;">{{ f.label }}</td>
+            <td style="padding: 10px; font-family: monospace; color: #475569;">{{ f.path }}</td>
+            <td style="padding: 10px;">{{ f.size_mb }} MB</td>
+            <td style="padding: 10px; font-weight: 700; color: #1d4ed8;">{{ f.size_gb }} GB</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>

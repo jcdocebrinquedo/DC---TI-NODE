@@ -25,5 +25,11 @@ function localIsoString(date = new Date()) {
     `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
 }
 
-module.exports = { formatLocalDateTime, localTimestampSlug, localIsoString };
+/** dd-MM-yy (horário local) — usado em nomes de pasta no Windows (sem '/') */
+function localDateFolder(date = new Date()) {
+  const yy = String(date.getFullYear()).slice(-2);
+  return `${pad(date.getDate())}-${pad(date.getMonth() + 1)}-${yy}`;
+}
+
+module.exports = { formatLocalDateTime, localTimestampSlug, localIsoString, localDateFolder };
 

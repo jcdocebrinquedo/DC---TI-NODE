@@ -11,7 +11,8 @@ class SessionStore {
     this.actions = [];
     this.startTime = formatLocalDateTime();
     this.stationName = process.env.COMPUTERNAME || 'ESTACAO-TI';
-    this.load();
+    // Sempre limpa e inicia uma nova sessão fresca quando o software abre
+    this.clear();
   }
 
   load() {
@@ -43,19 +44,46 @@ class SessionStore {
   }
 
   setStationName(name) {
-    this.stationName = name;
-    this.save();
+    if (name && typeof name === 'string' && name.trim()) {
+      this.stationName = name.trim();
+      this.save();
+    }
   }
 
   addAction(description) {
     if (!description || typeof description !== 'string') return;
+    const trimmed = description.trim();
+    if (!trimmed) return;
+
+    // Evita duplicatas consecutivas idênticas imediatas
+    const last = this.actions[this.actions.length - 1];
+    if (last && last.description === trimmed) {
+      return last;
+    }
+
     const item = {
       timestamp: formatLocalDateTime(),
-      description: description.trim()
+      description: trimmed
     };
     this.actions.push(item);
     this.save();
     return item;
+  }
+
+  restoreActions(actionsList, stationName) {
+    if (stationName && typeof stationName === 'string' && stationName.trim()) {
+      this.stationName = stationName.trim();
+    }
+    const now = formatLocalDateTime();
+    this.actions = Array.isArray(actionsList)
+      ? actionsList
+          .filter(a => typeof a === 'string' ? a.trim().length > 0 : (a && typeof a.description === 'string' && a.description.trim().length > 0))
+          .map(a => typeof a === 'string'
+            ? { timestamp: now, description: a.trim() }
+            : { timestamp: a.timestamp || now, description: a.description.trim() })
+      : [];
+    this.save();
+    return this.getActions();
   }
 
   getActions() {
@@ -65,9 +93,16 @@ class SessionStore {
   clear() {
     this.actions = [];
     this.startTime = formatLocalDateTime();
+    this.stationName = process.env.COMPUTERNAME || 'ESTACAO-TI';
+    try {
+      if (fs.existsSync(this.sessionFile)) {
+        fs.unlinkSync(this.sessionFile);
+      }
+    } catch {
+      // Ignora erro se não existir
+    }
     this.save();
   }
 }
 
 module.exports = { SessionStore, sessionStore: new SessionStore() };
-

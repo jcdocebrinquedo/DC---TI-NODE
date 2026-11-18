@@ -1,5 +1,5 @@
 <div class="app-layout">
-  
+
   <!-- BARRA LATERAL (SIDEBAR) -->
   <aside class="sidebar">
     <div class="sidebar-brand">
@@ -15,85 +15,114 @@
     <nav class="nav-menu">
       <div class="nav-section-title">Módulos do Sistema</div>
 
-      <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">
-        <mat-icon class="nav-icon">speed</mat-icon>
-        <div class="nav-labels">
-          <span class="nav-name">Visão Geral</span>
-          <span class="nav-desc">Score e diagnósticos</span>
-        </div>
-      </a>
+      <div class="nav-entry">
+        <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">
+          <mat-icon class="nav-icon">speed</mat-icon>
+          <div class="nav-labels">
+            <span class="nav-name">Visão Geral</span>
+            <span class="nav-desc">Score e diagnósticos</span>
+          </div>
+        </a>
+        <mat-progress-bar *ngIf="preloader.isLoading('dashboard')" class="nav-progress" mode="determinate" [value]="preloader.getProgress('dashboard')"></mat-progress-bar>
+      </div>
 
-      <a routerLink="/ai-assistant" routerLinkActive="active" class="nav-item ai-nav-item">
-        <mat-icon class="nav-icon ai-nav-icon">smart_toy</mat-icon>
-        <div class="nav-labels">
-          <span class="nav-name ai-nav-title">Suporte IA (MCP)</span>
-          <span class="nav-desc">Reparo Autônomo</span>
-        </div>
-      </a>
+      <div class="nav-entry">
+        <a routerLink="/ai-assistant" routerLinkActive="active" class="nav-item ai-nav-item">
+          <mat-icon class="nav-icon ai-nav-icon">smart_toy</mat-icon>
+          <div class="nav-labels">
+            <span class="nav-name ai-nav-title">Suporte IA (MCP)</span>
+            <span class="nav-desc">Reparo Autônomo</span>
+          </div>
+        </a>
+      </div>
 
-      <a routerLink="/hostname" routerLinkActive="active" class="nav-item">
-        <mat-icon class="nav-icon">badge</mat-icon>
-        <div class="nav-labels">
-          <span class="nav-name">Hostname</span>
-          <span class="nav-desc">Registro e DNS</span>
-        </div>
-      </a>
+      <div class="nav-entry">
+        <a routerLink="/hostname" routerLinkActive="active" class="nav-item"
+           [class.nav-locked]="preloader.isLoading('hostname')"
+           (click)="onNavClick($event, 'hostname')">
+          <mat-icon class="nav-icon">badge</mat-icon>
+          <div class="nav-labels">
+            <span class="nav-name">Hostname</span>
+            <span class="nav-desc">Registro e DNS</span>
+          </div>
+        </a>
+        <mat-progress-bar *ngIf="preloader.isLoading('hostname')" class="nav-progress" mode="determinate" [value]="preloader.getProgress('hostname')"></mat-progress-bar>
+      </div>
 
-      <a routerLink="/users" routerLinkActive="active" class="nav-item">
-        <mat-icon class="nav-icon">manage_accounts</mat-icon>
-        <div class="nav-labels">
-          <span class="nav-name">Usuários Locais</span>
-          <span class="nav-desc">Gerenciamento NetAPI</span>
-        </div>
-      </a>
+      <div class="nav-entry">
+        <a routerLink="/users" routerLinkActive="active" class="nav-item"
+           [class.nav-locked]="preloader.isLoading('users')"
+           (click)="onNavClick($event, 'users')">
+          <mat-icon class="nav-icon">manage_accounts</mat-icon>
+          <div class="nav-labels">
+            <span class="nav-name">Usuários Locais</span>
+            <span class="nav-desc">Gerenciamento NetAPI</span>
+          </div>
+        </a>
+        <mat-progress-bar *ngIf="preloader.isLoading('users')" class="nav-progress" mode="determinate" [value]="preloader.getProgress('users')"></mat-progress-bar>
+      </div>
 
-      <a routerLink="/storage" routerLinkActive="active" class="nav-item">
-        <mat-icon class="nav-icon">storage</mat-icon>
-        <div class="nav-labels">
-          <span class="nav-name">Discos & NVMe</span>
-          <span class="nav-desc">Telemetria SMART WMI</span>
-        </div>
-      </a>
+      <div class="nav-entry">
+        <a routerLink="/storage" routerLinkActive="active" class="nav-item"
+           [class.nav-locked]="preloader.isLoading('storage')"
+           (click)="onNavClick($event, 'storage')">
+          <mat-icon class="nav-icon">storage</mat-icon>
+          <div class="nav-labels">
+            <span class="nav-name">Discos & NVMe</span>
+            <span class="nav-desc">Telemetria SMART WMI</span>
+          </div>
+        </a>
+        <mat-progress-bar *ngIf="preloader.isLoading('storage')" class="nav-progress" mode="determinate" [value]="preloader.getProgress('storage')"></mat-progress-bar>
+      </div>
 
-      <a routerLink="/cleanup" routerLinkActive="active" class="nav-item">
-        <mat-icon class="nav-icon">cleaning_services</mat-icon>
-        <div class="nav-labels">
-          <span class="nav-name">Limpeza Expressa</span>
-          <span class="nav-desc">Remoção de temporários</span>
-        </div>
-      </a>
+      <div class="nav-entry">
+        <a routerLink="/cleanup" routerLinkActive="active" class="nav-item">
+          <mat-icon class="nav-icon">cleaning_services</mat-icon>
+          <div class="nav-labels">
+            <span class="nav-name">Limpeza Expressa</span>
+            <span class="nav-desc">Remoção de temporários</span>
+          </div>
+        </a>
+      </div>
 
-      <a routerLink="/repair" routerLinkActive="active" class="nav-item">
-        <mat-icon class="nav-icon">handyman</mat-icon>
-        <div class="nav-labels">
-          <span class="nav-name">Reparo do Sistema</span>
-          <span class="nav-desc">SFC, DISM, Spooler</span>
-        </div>
-      </a>
+      <div class="nav-entry">
+        <a routerLink="/repair" routerLinkActive="active" class="nav-item"
+           [class.nav-locked]="preloader.isLoading('repair')"
+           (click)="onNavClick($event, 'repair')">
+          <mat-icon class="nav-icon">handyman</mat-icon>
+          <div class="nav-labels">
+            <span class="nav-name">Reparo do Sistema</span>
+            <span class="nav-desc">SFC, DISM, Spooler</span>
+          </div>
+        </a>
+        <mat-progress-bar *ngIf="preloader.isLoading('repair')" class="nav-progress" mode="determinate" [value]="preloader.getProgress('repair')"></mat-progress-bar>
+      </div>
 
-      <a routerLink="/toolkit" routerLinkActive="active" class="nav-item">
-        <mat-icon class="nav-icon">build</mat-icon>
-        <div class="nav-labels">
-          <span class="nav-name">Otimização & Toolkit</span>
-          <span class="nav-desc">Rede, Boot, BSOD e Stress</span>
-        </div>
-      </a>
+      <div class="nav-entry">
+        <a routerLink="/toolkit" routerLinkActive="active" class="nav-item"
+           [class.nav-locked]="preloader.isLoading('toolkit')"
+           (click)="onNavClick($event, 'toolkit')">
+          <mat-icon class="nav-icon">build</mat-icon>
+          <div class="nav-labels">
+            <span class="nav-name">Otimização & Toolkit</span>
+            <span class="nav-desc">Rede, Boot, BSOD e Stress</span>
+          </div>
+        </a>
+        <mat-progress-bar *ngIf="preloader.isLoading('toolkit')" class="nav-progress" mode="determinate" [value]="preloader.getProgress('toolkit')"></mat-progress-bar>
+      </div>
 
-      <a routerLink="/email" routerLinkActive="active" class="nav-item">
-        <mat-icon class="nav-icon">mail</mat-icon>
-        <div class="nav-labels">
-          <span class="nav-name">E-mail Outlook</span>
-          <span class="nav-desc">Configuração corporativa</span>
-        </div>
-      </a>
-
-      <a routerLink="/service-order" routerLinkActive="active" class="nav-item">
-        <mat-icon class="nav-icon">description</mat-icon>
-        <div class="nav-labels">
-          <span class="nav-name">Ordem de Serviço</span>
-          <span class="nav-desc">Exportação MD / TXT</span>
-        </div>
-      </a>
+      <div class="nav-entry">
+        <a routerLink="/service-order" routerLinkActive="active" class="nav-item"
+           [class.nav-locked]="preloader.isLoading('service-order')"
+           (click)="onNavClick($event, 'service-order')">
+          <mat-icon class="nav-icon">description</mat-icon>
+          <div class="nav-labels">
+            <span class="nav-name">Ordem de Serviço</span>
+            <span class="nav-desc">DOCX / PDF & Histórico</span>
+          </div>
+        </a>
+        <mat-progress-bar *ngIf="preloader.isLoading('service-order')" class="nav-progress" mode="determinate" [value]="preloader.getProgress('service-order')"></mat-progress-bar>
+      </div>
     </nav>
 
     <div class="sidebar-footer">

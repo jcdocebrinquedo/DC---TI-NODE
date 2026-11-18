@@ -12,7 +12,8 @@
     "dev:frontend": "npm --prefix frontend start",
     "start": "node scripts/start-electron.js",
     "smoke:native": "node backend/scripts/smoke-native.js",
-    "dist": "npm run build && npm --prefix backend run dist"
+    "dist": "npm run build && npm --prefix backend run dist",
+    "exe": "npm --prefix backend run dist"
   },
   "engines": {
     "node": ">=22.22.0"

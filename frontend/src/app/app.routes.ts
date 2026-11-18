@@ -20,7 +20,7 @@ export const routes: Routes = [
   { path: 'storage', component: StorageComponent },
   { path: 'cleanup', component: CleanupComponent },
   { path: 'repair', component: RepairComponent },
-  { path: 'email', component: EmailComponent },
+  // { path: 'email', component: EmailComponent }, // Desativado temporariamente a pedido do usuário
   { path: 'service-order', component: ServiceOrderComponent },
   { path: '**', redirectTo: 'dashboard' }
 ];

@@ -25,7 +25,7 @@ const cleanupService = new CleanupService();
 const repairService = new RepairService();
 const serviceOrderService = new ServiceOrderService();
 
-const toolRegistry = new ToolRegistry({ bridge, cleanupService, repairService });
+const toolRegistry = new ToolRegistry({ bridge, cleanupService, repairService, serviceOrderService });
 const aiAgentService = new AiAgentService(toolRegistry);
 
 // Rotas de API
@@ -80,12 +80,17 @@ app.use((err, req, res, next) => {
   });
 });
 
-function startServer() {
-  return new Promise((resolve) => {
-    const server = app.listen(PORT, () => {
-      console.log(`[DC-TI Server] Rodando em http://localhost:${PORT}`);
+function startServer(port = PORT) {
+  return new Promise((resolve, reject) => {
+    const server = app.listen(port, '127.0.0.1', () => {
+      const actualPort = server.address()?.port || port;
+      console.log(`[DC-TI Server] Rodando em http://127.0.0.1:${actualPort}`);
       resolve(server);
     });
+    // Desabilita timeout de requisição para rotinas longas (SFC, DISM, Backup .tar, Winget)
+    server.requestTimeout = 0;
+    server.timeout = 0;
+    server.on('error', (err) => reject(err));
   });
 }
 
@@ -93,5 +98,4 @@ if (require.main === module) {
   startServer();
 }
 
-module.exports = { app, startServer, bridge, toolRegistry, aiAgentService, aiConfigService };
-
+module.exports = { app, startServer, bridge, toolRegistry, aiAgentService, aiConfigService, serviceOrderService };

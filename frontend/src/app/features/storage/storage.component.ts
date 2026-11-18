@@ -2,13 +2,15 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { finalize } from 'rxjs';
 import { StorageService, DiskSmartReport } from './storage.service';
+import { TabPreloaderService } from '../../core/services/tab-preloader.service';
 
 @Component({
   selector: 'app-storage',
   standalone: true,
-  imports: [CommonModule, MatIconModule, MatProgressSpinnerModule],
+  imports: [CommonModule, MatIconModule, MatProgressSpinnerModule, MatProgressBarModule],
   templateUrl: './storage.component.html',
   styleUrls: ['./storage.component.css']
 })
@@ -18,11 +20,18 @@ export class StorageComponent implements OnInit {
 
   constructor(
     private storageService: StorageService,
+    private preloader: TabPreloaderService,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-    this.carregarDiscos();
+    const cached = this.preloader.getCachedData<DiskSmartReport>('storage');
+    if (cached) {
+      this.report = cached;
+      this.cdr.detectChanges();
+    } else {
+      this.carregarDiscos();
+    }
   }
 
   carregarDiscos(): void {

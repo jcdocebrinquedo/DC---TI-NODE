@@ -11,7 +11,7 @@ const electronExe = path.join(backendDir, 'node_modules', 'electron', 'dist', 'e
 const env = { ...process.env };
 delete env.ELECTRON_RUN_AS_NODE;
 
-console.log('[start-electron] Iniciando Electron com o backend...');
+console.log('[start-electron] Iniciando Electron...');
 const child = spawn(electronExe, ['.'], {
   cwd: backendDir,
   env,
@@ -22,4 +22,3 @@ const child = spawn(electronExe, ['.'], {
 child.on('exit', (code) => {
   process.exit(code || 0);
 });
-

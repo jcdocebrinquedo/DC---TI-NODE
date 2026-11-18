@@ -56,6 +56,8 @@ export class EmailComponent implements OnInit {
 
   // Estados de Operação
   loadingConfig = false;
+  loadingTestAuth = false;
+  lastTestAuthResult: any = null;
   lastConfigResult: OutlookConfigResult | null = null;
   deletingSlot: string | null = null;
   deletingKey: string | null = null;
@@ -174,6 +176,114 @@ export class EmailComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
+  testarConexao(): void {
+    if (!this.emailAddress || !this.emailAddress.includes('@')) {
+      this.dialog.open(ConfirmDialogComponent, {
+        width: '420px',
+        disableClose: true,
+        data: {
+          title: 'Atenção: E-mail Inválido',
+          message: 'Por favor, informe um endereço de e-mail corporativo válido para testar a autenticação.',
+          type: 'warning',
+          hideCancel: true
+        }
+      });
+      return;
+    }
+
+    if (!this.password || this.password.trim().length === 0) {
+      this.dialog.open(ConfirmDialogComponent, {
+        width: '420px',
+        disableClose: true,
+        data: {
+          title: 'Senha Obrigatória',
+          message: 'Informe a senha da conta de e-mail para validar o logon de entrada e saída.',
+          type: 'warning',
+          hideCancel: true
+        }
+      });
+      return;
+    }
+
+    if (!this.incomingServer || !this.outgoingServer) {
+      this.dialog.open(ConfirmDialogComponent, {
+        width: '420px',
+        disableClose: true,
+        data: {
+          title: 'Servidores Obrigatórios',
+          message: 'Informe os servidores de correio de entrada e de saída.',
+          type: 'warning',
+          hideCancel: true
+        }
+      });
+      return;
+    }
+
+    const payload: Partial<OutlookConfigPayload> = {
+      email_address: this.emailAddress.trim().toLowerCase(),
+      password: this.password,
+      account_type: this.accountType,
+      incoming_server: this.incomingServer.trim(),
+      incoming_port: Number(this.incomingPort),
+      incoming_use_ssl: this.incomingUseSSL,
+      outgoing_server: this.outgoingServer.trim(),
+      outgoing_port: Number(this.outgoingPort),
+      outgoing_use_ssl: this.outgoingUseSSL,
+      outgoing_require_auth: this.outgoingRequireAuth
+    };
+
+    this.loadingTestAuth = true;
+    this.cdr.detectChanges();
+
+    this.emailService.testAuthentication(payload)
+      .pipe(finalize(() => {
+        this.loadingTestAuth = false;
+        this.cdr.detectChanges();
+      }))
+      .subscribe({
+        next: (res) => {
+          this.lastTestAuthResult = res.data;
+          this.dialog.open(ConfirmDialogComponent, {
+            width: '480px',
+            disableClose: true,
+            data: {
+              title: 'Teste de Autenticação Concluído',
+              subtitle: 'Todas as tarefas foram concluídas com êxito!',
+              message: `<div style="display:flex; flex-direction:column; gap:8px;">` +
+                       `<div style="display:flex; align-items:center; gap:8px; color:#16a34a; font-weight:600;"><span class="material-icons-outlined" style="font-size:18px;">check_circle</span> Logon no servidor de entrada (${res.data.incoming?.protocol} : ${res.data.incoming?.port}): OK</div>` +
+                       `<div style="display:flex; align-items:center; gap:8px; color:#16a34a; font-weight:600;"><span class="material-icons-outlined" style="font-size:18px;">check_circle</span> Autenticação SMTP (${res.data.outgoing?.server_host} : ${res.data.outgoing?.port}): OK</div>` +
+                       `<div style="color:#64748b; font-size:12px; margin-top:4px;">As credenciais e servidores estão perfeitamente válidos e prontos para o Microsoft Outlook.</div>` +
+                       `</div>`,
+              type: 'success',
+              hideCancel: true
+            }
+          });
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          const errData = err.error?.data || err.error;
+          const msg = errData?.error_message || err.error?.message || err.message;
+          const stage = errData?.failed_stage === 'incoming' ? 'Servidor de Entrada' : 'Servidor de Saída (SMTP)';
+
+          this.dialog.open(ConfirmDialogComponent, {
+            width: '500px',
+            disableClose: true,
+            data: {
+              title: 'Falha no Teste de Conta',
+              subtitle: `Erro na etapa: ${stage}`,
+              message: `Não foi possível autenticar a conta com os parâmetros fornecidos.<br><br>` +
+                       `<strong style="color:#dc2626;">Mensagem do Servidor:</strong><br>` +
+                       `<div style="background:#fef2f2; border:1px solid #fecaca; padding:8px 12px; border-radius:6px; color:#991b1b; font-size:12px; margin-top:4px; word-break:break-word;">${msg}</div><br>` +
+                       `Por favor, altere a senha ou ajuste as portas e servidores antes de configurar no Outlook.`,
+              type: 'danger',
+              hideCancel: true
+            }
+          });
+          this.cdr.detectChanges();
+        }
+      });
+  }
+
   configurarConta(): void {
     // Validações no Frontend
     if (!this.emailAddress || !this.emailAddress.includes('@')) {
@@ -274,17 +384,38 @@ export class EmailComponent implements OnInit {
           this.cdr.detectChanges();
         },
         error: (err) => {
-          const msg = err.error?.error?.message || err.error?.message || err.message;
-          this.dialog.open(ConfirmDialogComponent, {
-            width: '440px',
-            disableClose: true,
-            data: {
-              title: 'Erro na Configuração',
-              message: `Falha ao gravar configurações no perfil do Outlook:<br><br><code>${msg}</code>`,
-              type: 'danger',
-              hideCancel: true
-            }
-          });
+          const errData = err.error?.data || err.error;
+          const msg = errData?.error_message || err.error?.message || err.message;
+          const isAuthFailure = err.error?.code === 'E_AUTH_FAILED' || errData?.failed_stage;
+
+          if (isAuthFailure) {
+            const stage = errData?.failed_stage === 'incoming' ? 'Servidor de Entrada' : 'Servidor de Saída (SMTP)';
+            this.dialog.open(ConfirmDialogComponent, {
+              width: '500px',
+              disableClose: true,
+              data: {
+                title: 'Falha de Autenticação no Outlook',
+                subtitle: `Erro na validação do ${stage}`,
+                message: `Não foi possível configurar a conta no Outlook porque o teste prévio de credenciais falhou.<br><br>` +
+                         `<strong style="color:#dc2626;">Mensagem do Servidor:</strong><br>` +
+                         `<div style="background:#fef2f2; border:1px solid #fecaca; padding:8px 12px; border-radius:6px; color:#991b1b; font-size:12px; margin-top:4px; word-break:break-word;">${msg}</div><br>` +
+                         `<strong>A conta NÃO foi adicionada ao Outlook.</strong> Altere a senha ou as portas/servidores no formulário e tente novamente.`,
+                type: 'danger',
+                hideCancel: true
+              }
+            });
+          } else {
+            this.dialog.open(ConfirmDialogComponent, {
+              width: '440px',
+              disableClose: true,
+              data: {
+                title: 'Erro na Configuração',
+                message: `Falha ao gravar configurações no perfil do Outlook:<br><br><code>${msg}</code>`,
+                type: 'danger',
+                hideCancel: true
+              }
+            });
+          }
           this.cdr.detectChanges();
         }
       });

@@ -2,13 +2,15 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { finalize } from 'rxjs';
 import { DashboardService, FullDiagnosticReport } from './dashboard.service';
+import { TabPreloaderService } from '../../core/services/tab-preloader.service';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, MatIconModule, MatProgressSpinnerModule],
+  imports: [CommonModule, MatIconModule, MatProgressSpinnerModule, MatProgressBarModule],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
@@ -18,11 +20,18 @@ export class DashboardComponent implements OnInit {
 
   constructor(
     private dashboardService: DashboardService,
+    private preloader: TabPreloaderService,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-    this.carregarDiagnostico();
+    const cached = this.preloader.getCachedData<FullDiagnosticReport>('dashboard');
+    if (cached) {
+      this.report = cached;
+      this.cdr.detectChanges();
+    } else {
+      this.carregarDiagnostico();
+    }
   }
 
   carregarDiagnostico(): void {

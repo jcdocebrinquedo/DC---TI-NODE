@@ -1,10 +1,17 @@
+:host {
+  display: block;
+  width: 100%;
+  min-height: 100%;
+}
+
 .page-container {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding: 20px;
+  padding: 20px 20px 60px 20px;
   max-width: 1200px;
   margin: 0 auto;
+  box-sizing: border-box;
 }
 
 .group-panel {
@@ -519,9 +526,38 @@
   border-top: 1px solid #f1f5f9;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   flex-wrap: wrap;
   gap: 16px;
+}
+
+.btn-test {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 20px;
+  border: 1.5px solid #2563eb;
+  background: #ffffff;
+  color: #2563eb;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.btn-test:hover:not(:disabled) {
+  background: #eff6ff;
+  border-color: #1d4ed8;
+  color: #1d4ed8;
+}
+
+.btn-test:disabled {
+  border-color: #cbd5e1;
+  color: #94a3b8;
+  cursor: not-allowed;
+  background: #f8fafc;
 }
 
 .btn-save {

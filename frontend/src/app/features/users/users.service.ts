@@ -16,6 +16,11 @@ export interface UserRenameResult {
   username_updated: boolean;
 }
 
+export interface LocalGroupInfo {
+  name: string;
+  description: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -35,5 +40,25 @@ export class UsersService {
       new_full_name
     });
   }
-}
 
+  listGroups(): Observable<{ ok: boolean; data: LocalGroupInfo[] }> {
+    return this.http.get<{ ok: boolean; data: LocalGroupInfo[] }>(`${this.apiUrl}/groups`);
+  }
+
+  getUserGroups(username: string): Observable<{ ok: boolean; data: string[] }> {
+    return this.http.get<{ ok: boolean; data: string[] }>(`${this.apiUrl}/${encodeURIComponent(username)}/groups`);
+  }
+
+  setUserGroups(username: string, groups: string[]): Observable<{ ok: boolean; data: { ok: boolean; added: string[]; removed: string[]; current_groups: string[] } }> {
+    return this.http.post<{ ok: boolean; data: { ok: boolean; added: string[]; removed: string[]; current_groups: string[] } }>(
+      `${this.apiUrl}/${encodeURIComponent(username)}/groups`,
+      { groups }
+    );
+  }
+
+  deleteUser(username: string): Observable<{ ok: boolean; data: { ok: boolean; removed_username: string } }> {
+    return this.http.delete<{ ok: boolean; data: { ok: boolean; removed_username: string } }>(
+      `${this.apiUrl}/${encodeURIComponent(username)}`
+    );
+  }
+}

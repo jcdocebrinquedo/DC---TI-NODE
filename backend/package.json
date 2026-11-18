@@ -9,7 +9,8 @@
     "dev": "node --watch src/index.js",
     "start": "node src/index.js",
     "electron": "electron .",
-    "dist": "electron-builder --win --x64"
+    "dist": "node scripts/build-dist.js --win portable --x64",
+    "dist:setup": "node scripts/build-dist.js --win nsis --x64"
   },
   "dependencies": {
     "docx": "^9.15.3",
@@ -23,6 +24,7 @@
   "build": {
     "appId": "br.corporativo.dcti.support",
     "productName": "DC-TI Support",
+    "compression": "normal",
     "directories": {
       "output": "dist"
     },
@@ -43,6 +45,9 @@
         "portable"
       ],
       "requestedExecutionLevel": "requireAdministrator"
+    },
+    "portable": {
+      "requestExecutionLevel": "admin"
     },
     "nsis": {
       "oneClick": false,

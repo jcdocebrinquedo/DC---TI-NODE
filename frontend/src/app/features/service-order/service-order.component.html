@@ -10,10 +10,30 @@
         <div class="page-title-box">
           <h1>Emissão de Ordem de Serviço Interna (TI)</h1>
           <div class="page-subtitle">
-            Consolidação técnica e exportação formal em Markdown (.md) e Texto Puro (.txt)
+            Consolidação da sessão em cache, resumo por IA e exportação oficial em DOCX, PDF, Markdown e Texto
           </div>
         </div>
       </div>
+      <div class="header-actions">
+        <button type="button" class="btn-secondary" (click)="carregarSessao()" [disabled]="loadingSession">
+          <mat-icon>sync</mat-icon>
+          <span>Sincronizar Sessão</span>
+        </button>
+        <button type="button" class="btn-secondary" (click)="limparSessao()">
+          <mat-icon>restart_alt</mat-icon>
+          <span>Zerar Sessão</span>
+        </button>
+        <button type="button" class="btn-secondary" (click)="abrirPasta()">
+          <mat-icon>folder_open</mat-icon>
+          <span>Pasta de OS</span>
+        </button>
+      </div>
+    </div>
+    <div *ngIf="loadingGenerate || loadingSummary || loadingSession || loadingHistory" style="margin-top: 12px;">
+      <div style="font-size: 12.5px; color: #1e3a8a; font-weight: 600; margin-bottom: 6px;">
+        {{ loadingGenerate ? 'Gerando Ordem de Serviço (DOCX, PDF, MD, TXT)...' : (loadingSummary ? 'Gerando síntese executiva com IA...' : 'Carregando dados...') }}
+      </div>
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
     </div>
   </div>
 
@@ -40,13 +60,30 @@
         <input type="text" [(ngModel)]="userName" placeholder="Nome do usuário solicitante..." class="custom-input" />
       </div>
     </div>
+
+    <div class="summary-box">
+      <div class="summary-header">
+        <label>Síntese Executiva / Resumo Técnico (Opcional — gerado pela IA ou manual):</label>
+        <button type="button" class="btn-ai-summary" (click)="gerarResumoIA()" [disabled]="loadingSummary">
+          <mat-progress-spinner *ngIf="loadingSummary" mode="indeterminate" diameter="14"></mat-progress-spinner>
+          <mat-icon *ngIf="!loadingSummary">auto_awesome</mat-icon>
+          <span>{{ loadingSummary ? 'Gerando síntese...' : 'Gerar Resumo com IA' }}</span>
+        </button>
+      </div>
+      <textarea
+        [(ngModel)]="summary"
+        rows="3"
+        placeholder="Resumo executivo do problema encontrado e solução aplicada..."
+        class="custom-textarea"
+      ></textarea>
+    </div>
   </div>
 
-  <!-- GRUPO 3: AÇÕES REALIZADAS (EXPANSÃO VERTICAL) -->
-  <div class="group-panel panel-expand">
+  <!-- GRUPO 3: AÇÕES REALIZADAS -->
+  <div class="group-panel">
     <div class="card-header">
       <mat-icon class="section-icon color-blue">checklist</mat-icon>
-      <h3>Ações e Procedimentos Executados</h3>
+      <h3>Ações e Procedimentos Executados na Sessão ({{ actions.length }})</h3>
     </div>
 
     <div class="add-action-box">
@@ -63,7 +100,7 @@
       </button>
     </div>
 
-    <div class="actions-list">
+    <div class="actions-list" *ngIf="actions.length > 0">
       <div *ngFor="let act of actions; let i = index" class="action-item">
         <div class="action-index">{{ i + 1 }}.</div>
         <div class="action-text">{{ act }}</div>
@@ -73,14 +110,78 @@
       </div>
     </div>
 
+    <div *ngIf="actions.length === 0" class="empty-actions">
+      Nenhuma ação registrada nesta sessão ainda. Execute reparos/limpezas ou adicione manualmente acima.
+    </div>
+
     <div class="action-bar">
       <button type="button" class="btn-generate" (click)="gerarOrdemServico()" [disabled]="loadingGenerate">
         <mat-progress-spinner *ngIf="loadingGenerate" mode="indeterminate" diameter="18"></mat-progress-spinner>
         <mat-icon *ngIf="!loadingGenerate">print</mat-icon>
-        <span>{{ loadingGenerate ? 'Gerando documentos...' : 'Gerar Ordem de Serviço (.md / .txt)' }}</span>
+        <span>{{ loadingGenerate ? 'Gerando DOCX e PDF...' : 'Gerar Ordem de Serviço (DOCX / PDF)' }}</span>
       </button>
+
+      <div class="generated-files" *ngIf="result">
+        <span class="badge-ok">Última OS: {{ result.order_id }}</span>
+        <button type="button" class="btn-file" *ngIf="result.docx_path" (click)="abrirArquivo(result.docx_path)">
+          <mat-icon>article</mat-icon>
+          <span>Localizar DOCX</span>
+        </button>
+        <button type="button" class="btn-file" *ngIf="result.pdf_path" (click)="abrirArquivo(result.pdf_path)">
+          <mat-icon>picture_as_pdf</mat-icon>
+          <span>Localizar PDF</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GRUPO 4: HISTÓRICO PERSISTENTE DE ORDENS DE SERVIÇO -->
+  <div class="group-panel panel-expand">
+    <div class="card-header">
+      <mat-icon class="section-icon color-blue">history</mat-icon>
+      <h3>Histórico Salvo de Ordens de Serviço ({{ history.length }})</h3>
+    </div>
+
+    <div class="table-responsive" *ngIf="history.length > 0">
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>Protocolo</th>
+            <th>Data/Hora</th>
+            <th>Estação / Técnico</th>
+            <th>Ações</th>
+            <th style="text-align: right;">Opções</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let h of history">
+            <td class="font-mono font-bold">{{ h.order_id }}</td>
+            <td>{{ h.created_at_local }}</td>
+            <td>{{ h.station_name || '—' }} <span class="muted">({{ h.technician_name || '—' }})</span></td>
+            <td>{{ (h.actions_performed || []).length }} item(ns)</td>
+            <td style="text-align: right; white-space: nowrap;">
+              <button type="button" class="btn-restore" (click)="puxarDoHistorico(h)">
+                <mat-icon>restore</mat-icon>
+                <span>Puxar para OS</span>
+              </button>
+              <button type="button" class="btn-file-mini" *ngIf="h.pdf_path" (click)="abrirArquivo(h.pdf_path)" title="Localizar PDF">
+                <mat-icon>picture_as_pdf</mat-icon>
+              </button>
+              <button type="button" class="btn-file-mini" *ngIf="h.docx_path" (click)="abrirArquivo(h.docx_path)" title="Localizar DOCX">
+                <mat-icon>article</mat-icon>
+              </button>
+              <button type="button" class="btn-remove" (click)="excluirHistorico(h)" title="Excluir do histórico">
+                <mat-icon>delete_outline</mat-icon>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div *ngIf="history.length === 0" class="empty-actions">
+      Nenhuma Ordem de Serviço emitida no histórico local ainda.
     </div>
   </div>
 
 </div>
-

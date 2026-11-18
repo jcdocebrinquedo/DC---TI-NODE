@@ -3,13 +3,14 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { finalize } from 'rxjs';
 import { AiService, AiConfig, ChatMessage } from './ai.service';
 
 @Component({
   selector: 'app-ai-assistant',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatIconModule, MatProgressSpinnerModule],
+  imports: [CommonModule, FormsModule, MatIconModule, MatProgressSpinnerModule, MatProgressBarModule],
   templateUrl: './ai-assistant.component.html',
   styleUrls: ['./ai-assistant.component.css']
 })

@@ -4,6 +4,22 @@
 }
 
 /* --- NAVEGAÇÃO ENTRE ABAS DO TOOLKIT --- */
+.tab-btn-wrap {
+  display: inline-flex;
+  flex-direction: column;
+}
+
+.tab-btn:disabled {
+  opacity: 0.58;
+  cursor: not-allowed;
+}
+
+.tab-sub-progress {
+  height: 2.5px !important;
+  border-radius: 0 0 6px 6px;
+  margin: -1px 4px 0;
+}
+
 .toolkit-nav {
   display: flex;
   gap: 8px;
@@ -280,7 +296,21 @@
    RESPONSIVIDADE TOOLKIT
 ============================================================ */
 @media (max-width: 768px) {
-  .toolkit-nav {
+  .tab-btn-wrap {
+  display: inline-flex;
+  flex-direction: column;
+}
+
+.tab-btn:disabled {
+  opacity: 0.58;
+  cursor: not-allowed;
+}
+
+.tab-sub-progress {
+  height: 2.5px !important;
+  border-radius: 0 0 6px 6px;
+  margin: -1px 4px 0;
+}
     flex-direction: column;
     align-items: stretch;
   }
@@ -304,5 +334,4 @@
     width: 100%;
     justify-content: center;
   }
-}
 

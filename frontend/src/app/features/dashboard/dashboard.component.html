@@ -27,6 +27,7 @@
   <div *ngIf="loading" class="group-panel loading-box">
     <mat-progress-spinner mode="indeterminate" diameter="40"></mat-progress-spinner>
     <div style="font-weight: 600; font-size: 14px; color: #334155;">Executando varredura analítica paralela (Hardware, SMART, Bateria e Event Viewer)...</div>
+    <mat-progress-bar mode="indeterminate" style="margin-top: 12px;"></mat-progress-bar>
   </div>
 
   <ng-container *ngIf="!loading && report">

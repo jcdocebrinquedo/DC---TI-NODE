@@ -1,6 +1,10 @@
 'use strict';
 
+const { exec } = require('node:child_process');
+const { promisify } = require('node:util');
 const { formatLocalDateTime } = require('../utils/local-date');
+
+const execAsync = promisify(exec);
 
 /**
  * Port do algoritmo de pontuação e recomendações analíticas de analyzer.rs
@@ -216,6 +220,66 @@ class DiagnosticService {
       shutdown_analysis: shutdownAnalysis,
       recommendations
     };
+  }
+
+  async getFullInventory() {
+    const ps = `
+      [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+      $cs = Get-CimInstance Win32_ComputerSystem -ErrorAction SilentlyContinue
+      $bios = Get-CimInstance Win32_BIOS -ErrorAction SilentlyContinue
+      $board = Get-CimInstance Win32_BaseBoard -ErrorAction SilentlyContinue
+      $gpus = Get-CimInstance Win32_VideoController -ErrorAction SilentlyContinue | ForEach-Object {
+        [PSCustomObject]@{
+          name = $_.Name
+          driver_version = $_.DriverVersion
+          vram_mb = if ($_.AdapterRAM) { [math]::Round($_.AdapterRAM / 1MB, 0) } else { 0 }
+        }
+      }
+      $ramArray = Get-CimInstance Win32_PhysicalMemoryArray -ErrorAction SilentlyContinue | Select-Object -First 1
+      $ramModules = Get-CimInstance Win32_PhysicalMemory -ErrorAction SilentlyContinue | ForEach-Object {
+        [PSCustomObject]@{
+          slot = $_.DeviceLocator
+          manufacturer = $_.Manufacturer
+          part_number = ($_.PartNumber | ForEach-Object { $_.Trim() })
+          capacity_gb = [math]::Round($_.Capacity / 1GB, 2)
+          speed_mhz = $_.ConfiguredClockSpeed
+          smbios_type = $_.SMBIOSMemoryType
+        }
+      }
+      $osInfo = Get-CimInstance Win32_OperatingSystem -ErrorAction SilentlyContinue
+      $lic = Get-CimInstance SoftwareLicensingProduct -Filter "ApplicationID='55c92734-d682-4d71-983e-d6ec3f16059f' and PartialProductKey is not null" -ErrorAction SilentlyContinue | Select-Object -First 1
+
+      [PSCustomObject]@{
+        collected_at_local = (Get-Date).ToString('dd/MM/yyyy HH:mm:ss')
+        system_manufacturer = if ($cs) { $cs.Manufacturer } else { '' }
+        system_model = if ($cs) { $cs.Model } else { '' }
+        serial_number = if ($bios) { $bios.SerialNumber } else { '' }
+        bios_version = if ($bios) { $bios.SMBIOSBIOSVersion } else { '' }
+        motherboard = if ($board) { "$($board.Manufacturer) $($board.Product)".Trim() } else { '' }
+        os_caption = if ($osInfo) { $osInfo.Caption } else { '' }
+        os_version = if ($osInfo) { "$($osInfo.Version) (Build $($osInfo.BuildNumber))" } else { '' }
+        windows_license = if ($lic) {
+          [PSCustomObject]@{
+            name = $lic.Name
+            partial_key = $lic.PartialProductKey
+            status = switch ($lic.LicenseStatus) { 1 { 'Licenciado (Ativo)' } 0 { 'Não Licenciado' } default { 'Em Notificação / Graça' } }
+          }
+        } else { $null }
+        ram_total_slots = if ($ramArray) { [int]$ramArray.MemoryDevices } else { @($ramModules).Count }
+        ram_modules = @($ramModules)
+        gpus = @($gpus)
+      } | ConvertTo-Json -Depth 4 -Compress
+    `;
+
+    const encoded = Buffer.from(ps, 'utf16le').toString('base64');
+    const { stdout } = await execAsync(`powershell -NoProfile -NonInteractive -EncodedCommand ${encoded}`, {
+      timeout: 25000,
+      maxBuffer: 1024 * 1024 * 5
+    });
+    const parsed = JSON.parse(stdout.trim());
+    if (!Array.isArray(parsed.ram_modules)) parsed.ram_modules = parsed.ram_modules ? [parsed.ram_modules] : [];
+    if (!Array.isArray(parsed.gpus)) parsed.gpus = parsed.gpus ? [parsed.gpus] : [];
+    return parsed;
   }
 }
 

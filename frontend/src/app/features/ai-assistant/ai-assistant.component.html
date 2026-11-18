@@ -99,9 +99,12 @@
           <div class="message-body" [innerHTML]="formatContent(m.content)"></div>
         </div>
 
-        <div *ngIf="loading" class="loading-bubble">
-          <mat-progress-spinner mode="indeterminate" diameter="22"></mat-progress-spinner>
-          <span>O Agente de IA está analisando a solicitação e executando ações no Windows...</span>
+        <div *ngIf="loading" class="loading-bubble" style="flex-direction: column; align-items: stretch; gap: 8px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <mat-progress-spinner mode="indeterminate" diameter="22"></mat-progress-spinner>
+            <span>O Agente de IA está analisando a solicitação e executando ações no Windows...</span>
+          </div>
+          <mat-progress-bar mode="indeterminate"></mat-progress-bar>
         </div>
       </div>
 

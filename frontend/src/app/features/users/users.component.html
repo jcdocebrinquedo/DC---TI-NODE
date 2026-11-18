@@ -8,9 +8,9 @@
           <mat-icon>manage_accounts</mat-icon>
         </div>
         <div class="page-title-box">
-          <h1>Gerenciamento de Usuários Locais (NetAPI Win32)</h1>
+          <h1>Gerenciamento de Usuários Locais (Windows)</h1>
           <div class="page-subtitle">
-            Auditoria e renomeação de contas locais do Windows (Username e Nome Completo)
+            Renomeação de contas, associação de grupos/permissões e remoção de usuários locais
           </div>
         </div>
       </div>
@@ -21,6 +21,9 @@
           <span>Atualizar Lista</span>
         </button>
       </div>
+    </div>
+    <div *ngIf="loadingList || loadingUpdate || loadingGroups || savingGroups || deletingUser" style="margin-top: 12px;">
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
     </div>
   </div>
 
@@ -49,30 +52,79 @@
         </div>
       </div>
 
-      <!-- Coluna da Direita: Formulário de Edição -->
+      <!-- Coluna da Direita: Renomear, Grupos/Permissões e Remover -->
       <div class="user-form" *ngIf="selectedUser">
-        <div class="form-title">Modificar Conta: <strong>{{ selectedUser.username }}</strong></div>
-        
-        <div class="field-box">
-          <label>Nome de Logon (Username):</label>
-          <input type="text" [(ngModel)]="newUsername" class="custom-input" />
+        <div class="form-title-row">
+          <div class="form-title">Gerenciar Conta: <strong>{{ selectedUser.username }}</strong></div>
+          <button
+            type="button"
+            class="btn-danger-user"
+            (click)="removerUsuario()"
+            [disabled]="deletingUser || isProtectedSystemAccount(selectedUser)"
+            [title]="isProtectedSystemAccount(selectedUser) ? 'Conta da sessão atual ou conta interna protegida do Windows' : 'Remover usuário do Windows'"
+          >
+            <mat-progress-spinner *ngIf="deletingUser" mode="indeterminate" diameter="16"></mat-progress-spinner>
+            <mat-icon *ngIf="!deletingUser">person_remove</mat-icon>
+            <span>Remover Usuário</span>
+          </button>
         </div>
 
-        <div class="field-box">
-          <label>Nome de Exibição Completo (Full Name):</label>
-          <input type="text" [(ngModel)]="newFullName" class="custom-input" />
+        <div class="fields-row">
+          <div class="field-box">
+            <label>Nome de Logon (Username):</label>
+            <input type="text" [(ngModel)]="newUsername" class="custom-input" />
+          </div>
+
+          <div class="field-box">
+            <label>Nome de Exibição Completo (Full Name):</label>
+            <input type="text" [(ngModel)]="newFullName" class="custom-input" />
+          </div>
         </div>
 
         <div class="action-box">
           <button type="button" class="btn-save" (click)="salvarAlteracoes()" [disabled]="loadingUpdate">
             <mat-progress-spinner *ngIf="loadingUpdate" mode="indeterminate" diameter="18"></mat-progress-spinner>
             <mat-icon *ngIf="!loadingUpdate">save</mat-icon>
-            <span>Salvar Alterações</span>
+            <span>Salvar Renomeação</span>
           </button>
+        </div>
+
+        <!-- SEÇÃO DE GRUPOS E PERMISSÕES -->
+        <div class="groups-section">
+          <div class="groups-header">
+            <div>
+              <h4>Permissões e Associação de Grupos Locais</h4>
+              <p class="groups-sub">Marque ou desmarque os grupos aos quais este usuário pertence (ex: Administradores, Usuários)</p>
+            </div>
+            <button
+              type="button"
+              class="btn-save"
+              (click)="salvarGrupos()"
+              [disabled]="savingGroups || loadingGroups || !hasGroupChanges"
+            >
+              <mat-progress-spinner *ngIf="savingGroups" mode="indeterminate" diameter="16"></mat-progress-spinner>
+              <mat-icon *ngIf="!savingGroups">admin_panel_settings</mat-icon>
+              <span>Aplicar Grupos</span>
+            </button>
+          </div>
+
+          <div *ngIf="loadingGroups" class="loading-groups">
+            <mat-progress-spinner mode="indeterminate" diameter="22"></mat-progress-spinner>
+            <span>Carregando associações de grupos...</span>
+          </div>
+
+          <div *ngIf="!loadingGroups" class="groups-grid">
+            <label *ngFor="let g of allGroups" class="group-check-card" [class.selected]="isGroupSelected(g.name)">
+              <input type="checkbox" [checked]="isGroupSelected(g.name)" (change)="toggleGroup(g.name)" />
+              <div class="group-info">
+                <div class="group-name">{{ g.name }}</div>
+                <div class="group-desc">{{ g.description || 'Grupo local do Windows' }}</div>
+              </div>
+            </label>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
 </div>
-

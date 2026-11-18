@@ -246,17 +246,23 @@
         </div>
       </div>
 
-      <!-- BOTÃO DE AÇÃO -->
+      <!-- BOTÕES DE AÇÃO -->
       <div class="action-bar">
-        <button type="button" class="btn-save" (click)="configurarConta()" [disabled]="loadingConfig">
+        <button type="button" class="btn-test" (click)="testarConexao()" [disabled]="loadingTestAuth || loadingConfig">
+          <mat-progress-spinner *ngIf="loadingTestAuth" mode="indeterminate" diameter="18"></mat-progress-spinner>
+          <mat-icon *ngIf="!loadingTestAuth">network_check</mat-icon>
+          <span>{{ loadingTestAuth ? 'Testando Conexão e Logon...' : 'Testar Conexão / Autenticação' }}</span>
+        </button>
+
+        <button type="button" class="btn-save" (click)="configurarConta()" [disabled]="loadingConfig || loadingTestAuth">
           <mat-progress-spinner *ngIf="loadingConfig" mode="indeterminate" diameter="18"></mat-progress-spinner>
           <mat-icon *ngIf="!loadingConfig">add_circle</mat-icon>
-          <span>{{ loadingConfig ? 'Gravando e Criptografando no Outlook...' : 'Configurar Conta e Arquivo no Outlook' }}</span>
+          <span>{{ loadingConfig ? 'Validando e Gravando no Outlook...' : 'Configurar Conta e Arquivo no Outlook' }}</span>
         </button>
 
         <span class="security-indicator">
           <mat-icon>shield</mat-icon>
-          Criptografia nativa DPAPI (0x02) & Registro Atômico no HKCU sem sobrescrever perfis existentes.
+          Teste prévio de autenticação real (POP3/IMAP & SMTP) com criptografia nativa DPAPI (0x02).
         </span>
       </div>
     </div>

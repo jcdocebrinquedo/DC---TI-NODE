@@ -18,19 +18,27 @@ Você possui ACESSO TOTAL ao sistema operacional através das ferramentas nativa
 - 'list_startup_programs': Lista programas de inicialização automática do Windows (HKLM/HKCU Run).
 - 'analyze_crash_minidumps': Inspeciona arquivos Minidump de tela azul (BSOD) e eventos críticos do Kernel.
 - 'run_stress_test': Teste de estresse rápido da CPU (10 segundos) para teste de estabilidade.
+- 'get_session_audit_log': Inspeciona tudo o que foi realizado no software desde que foi aberto na sessão atual.
+- 'generate_service_order': Gera a Ordem de Serviço formal nos formatos DOCX (Word), PDF, Markdown (.md) e Texto (.txt) com o cabeçalho e logotipo oficial da empresa.
 
 SEUS PRINCÍPIOS E DIRETRIZES DE ATUAÇÃO:
 1. REGRA MANDATÓRIA DE ELEVAÇÃO DE ADMINISTRADOR:
    Sempre que o usuário solicitar, autorizar ou confirmar privilégios de Administrador (por exemplo: "confirmo", "quero admin_elevated: true", "elevar administrador", "pode executar como admin"), você DEVE IMEDIATAMENTE acionar a ferramenta 'confirm_admin_elevation' com {"confirmed": true}. NUNCA diga que não é possível ou que o usuário precisa reiniciar manualmente antes de chamar essa ferramenta. Chame a ferramenta 'confirm_admin_elevation' imediatamente.
-2. OBJETIVO: Atender à solicitação do usuário, diagnosticando e executando as manutenções e reparos necessários na máquina.
-3. RESOLUÇÃO REAL: Não fique apenas dando conselhos teóricos; UTILIZE as ferramentas disponíveis para executar as checagens e correções reais no sistema.
-4. INSTRUÇÕES APÓS A MANUTENÇÃO: Sempre que concluir um reparo ou comando, explique de forma clara e profissional:
+2. GERAÇÃO DE ORDEM DE SERVIÇO COM IA:
+   Quando o usuário solicitar a geração de Ordem de Serviço (OS), relatório de atendimento ou formalização dos trabalhos feitos:
+   - Chame 'get_session_audit_log' para analisar todo o histórico de comandos, reparos e diagnósticos executados na sessão.
+   - Formule um resumo executivo técnico claro dos problemas identificados e das soluções adotadas.
+   - Chame a ferramenta 'generate_service_order' com a lista completa de ações estruturadas, gerando os documentos em DOCX e PDF com a logomarca da empresa.
+   - Informe os caminhos dos arquivos gerados para o usuário.
+3. OBJETIVO: Atender à solicitação do usuário, diagnosticando e executando as manutenções e reparos necessários na máquina.
+4. RESOLUÇÃO REAL: Não fique apenas dando conselhos teóricos; UTILIZE as ferramentas disponíveis para executar as checagens e correções reais no sistema.
+5. INSTRUÇÕES APÓS A MANUTENÇÃO: Sempre que concluir um reparo ou comando, explique de forma clara e profissional:
    - O que foi detectado;
    - O que foi executado na máquina;
    - O resultado obtido;
    - Se é necessária reinicialização do Windows ou alguma ação posterior por parte do usuário.
-4. EM CASO DE DÚVIDA OU AMBIGUIDADE: Se o pedido do usuário for vago ou envolver múltiplos caminhos de ação (ex: "meu pc tá lento", "a internet tá ruim", "quero liberar espaço"), NÃO faça suposições perigosas. Pergunte ao usuário o que ele prefere realizar, dando alternativas claras (Exemplo: Opção 1: Limpeza de temporários; Opção 2: Diagnóstico de integridade de disco; Opção 3: Varredura de arquivos corrompidos SFC).
-5. RESPOSTA EM PORTUGUÊS DO BRASIL: Seja técnico, educado, preciso e transparente em relação às ações executadas.`;
+6. EM CASO DE DÚVIDA OU AMBIGUIDADE: Se o pedido do usuário for vago ou envolver múltiplos caminhos de ação, NÃO faça suposições perigosas. Pergunte ao usuário o que ele prefere realizar, dando alternativas claras.
+7. RESPOSTA EM PORTUGUÊS DO BRASIL: Seja técnico, educado, preciso e transparente em relação às ações executadas. Utilize sempre ortografia correta do Português do Brasil com acentuação gráfica e cedilhas completas (nunca omita acentos ou cedilhas).`;
 
 class AiAgentService {
   constructor(toolRegistry) {
@@ -62,8 +70,11 @@ class AiAgentService {
 - Privilégios de Administrador (admin_elevated): ${isElevated ? 'true (CONFIRMADO E ATIVO COM CONTROLE TOTAL)' : 'false (NÃO ELEVADO)'}
 ${isElevated ? 'Atenção: Os privilégios de Administrador JÁ FORAM confirmados e ativados. Se o usuário perguntar ou solicitar o status, confirme com entusiasmo e certeza técnica que admin_elevated agora é true e você está pronto para operações avançadas.' : ''}`;
 
-    // Constrói lista de mensagens garantindo formato compatível
-    const fullMessages = messages.filter(m => m.role !== 'system');
+    // Constrói lista de mensagens garantindo formato estritamente compatível com o Doce LLM Gateway
+    const allowedRoles = new Set(['user', 'assistant', 'system', 'model']);
+    const fullMessages = messages
+      .filter(m => m && m.role !== 'system' && allowedRoles.has(m.role) && typeof m.content === 'string' && m.content.trim().length > 0)
+      .map(m => ({ role: m.role, content: m.content.trim() }));
 
     const tools = this.toolRegistry.getToolsDefinitions().map(t => ({
       type: 'function',
@@ -73,6 +84,8 @@ ${isElevated ? 'Atenção: Os privilégios de Administrador JÁ FORAM confirmado
     // Loop de Tool Calling (máx 5 iterações para evitar loops infinitos)
     let iterations = 0;
     const currentMessages = [...fullMessages];
+    const executedCalls = new Set();
+    let forceNoToolsNext = false;
 
     while (iterations < 5) {
       iterations++;
@@ -84,14 +97,15 @@ ${isElevated ? 'Atenção: Os privilégios de Administrador JÁ FORAM confirmado
         messages: currentMessages,
         temperature: config.temperature ?? 0.2,
         tools: tools,
-        tool_choice: 'auto'
+        tool_choice: (forceNoToolsNext || iterations === 5) ? 'none' : 'auto'
       };
 
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${config.apiKey}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json; charset=utf-8',
+          'Accept': 'application/json; charset=utf-8'
         },
         body: JSON.stringify(payload)
       });
@@ -99,10 +113,12 @@ ${isElevated ? 'Atenção: Os privilégios de Administrador JÁ FORAM confirmado
       if (!response.ok) {
         let errText = await response.text();
         try {
-          const errJson = JSON.parse(errText);
-          errText = errJson.error || errJson.message || errText;
-        } catch {}
-        throw new Error(`Erro no Doce LLM Gateway (${response.status}): ${errText}`);
+          const parsed = JSON.parse(errText);
+          errText = parsed.error?.message || errText;
+        } catch {
+          // Mantém errText original
+        }
+        throw new Error(`Erro no Gateway de IA (${response.status}): ${errText}`);
       }
 
       const resData = await response.json();
@@ -110,66 +126,70 @@ ${isElevated ? 'Atenção: Os privilégios de Administrador JÁ FORAM confirmado
       const assistantMessage = choice?.message;
 
       if (!assistantMessage) {
-        throw new Error('Resposta vazia ou inválida recebida do Gateway de IA.');
+        throw new Error('Resposta vazia recebida do Gateway de IA.');
       }
 
-      // Se a IA solicitou execução de ferramentas (tool_calls)
+      // Se a IA solicitou chamadas de ferramentas (Tool Calling)
       if (assistantMessage.tool_calls && assistantMessage.tool_calls.length > 0) {
-        // Registra a intenção do assistente mantendo conformidade com o schema do Gateway
-        const calledTools = assistantMessage.tool_calls.map(tc => tc.function?.name).join(', ');
-        currentMessages.push({
-          role: 'assistant',
-          content: assistantMessage.content && assistantMessage.content.trim().length > 0
-            ? assistantMessage.content
-            : `[Iniciando execução da(s) ferramenta(s): ${calledTools}]`
-        });
+        const executedNames = [];
+        const toolResults = [];
+        let repeatedCall = false;
 
         for (const toolCall of assistantMessage.tool_calls) {
-          const funcName = toolCall.function?.name;
-          let funcArgs = {};
+          const fnName = toolCall.function?.name;
+          let fnArgs = {};
           try {
-            funcArgs = typeof toolCall.function?.arguments === 'string'
-              ? JSON.parse(toolCall.function.arguments)
-              : (toolCall.function?.arguments || {});
+            fnArgs = JSON.parse(toolCall.function?.arguments || '{}');
           } catch (e) {
-            console.warn('[AiAgentService] Falha ao fazer parse dos argumentos da tool:', e);
+            console.warn('[AiAgentService] Falha ao fazer parse de argumentos da ferramenta:', e.message);
           }
 
-          console.log(`[AI MCP Executando] ${funcName}:`, funcArgs);
-          const toolResult = await this.toolRegistry.executeTool(funcName, funcArgs);
+          const callSig = `${fnName}:${JSON.stringify(fnArgs)}`;
+          if (executedCalls.has(callSig)) {
+            repeatedCall = true;
+          }
+          executedCalls.add(callSig);
+          executedNames.push(fnName);
 
-          // O Doce LLM Gateway exige role 'user'|'assistant'|'system'|'model' com content >= 1
-          currentMessages.push({
-            role: 'user',
-            content: `[Resultado da execução da ferramenta MCP '${funcName}']:\n${JSON.stringify(toolResult, null, 2)}`
-          });
+          console.log(`[AiAgentService] Executando tool: ${fnName}`, fnArgs);
+          const toolResult = await this.toolRegistry.executeTool(fnName, fnArgs);
+          toolResults.push(`### Ferramenta: ${fnName}\n${JSON.stringify(toolResult, null, 2)}`);
         }
-        // Continua o loop para a IA analisar o resultado das ferramentas
+
+        // O Doce LLM Gateway aceita apenas { role: 'user'|'assistant'|'system'|'model', content: string (>=1 char) }
+        const assistantNote = (assistantMessage.content && assistantMessage.content.trim())
+          ? assistantMessage.content.trim()
+          : `Executando ferramenta(s) de diagnóstico/manutenção: ${executedNames.join(', ')}.`;
+
+        currentMessages.push({
+          role: 'assistant',
+          content: assistantNote
+        });
+
+        currentMessages.push({
+          role: 'user',
+          content: `[RESULTADO REAL DAS FERRAMENTAS EXECUTADAS NA MÁQUINA]:\n\n${toolResults.join('\n\n')}\n\nCom base exclusivamente nos dados reais acima, forneça a resposta técnica final ao usuário em Português do Brasil.`
+        });
+
+        if (repeatedCall) {
+          forceNoToolsNext = true;
+        }
         continue;
       }
 
-      // Sem tool calls, registra a resposta do assistente
-      currentMessages.push({
-        role: 'assistant',
-        content: assistantMessage.content || 'Ação concluída.'
-      });
-
-      // Se não há chamadas de ferramentas, a resposta final está pronta
+      // Se não há tool calls, temos a resposta textual final do agente
       return {
-        reply: assistantMessage.content,
-        usage: resData.usage,
-        messagesHistory: currentMessages
+        reply: assistantMessage.content || 'Ação concluída com sucesso.',
+        model: resData.model || config.model,
+        usage: resData.usage
       };
     }
 
-    // Se atingiu o limite de iterações, retorna a última mensagem
-    const lastMsg = currentMessages[currentMessages.length - 1];
     return {
-      reply: lastMsg.content || 'Ações executadas com sucesso pelo agente.',
-      messagesHistory: currentMessages
+      reply: 'Atingido limite de iterações de ferramentas com o sistema operacional.',
+      model: config.model
     };
   }
 }
 
 module.exports = { AiAgentService };
-

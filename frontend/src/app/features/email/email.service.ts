@@ -90,6 +90,10 @@ export class EmailService {
     return this.http.get<{ ok: boolean; data: PstCandidate[] }>(`${this.apiUrl}/pst-candidates`, { params });
   }
 
+  testAuthentication(config: Partial<OutlookConfigPayload>): Observable<{ ok: boolean; data: any }> {
+    return this.http.post<{ ok: boolean; data: any }>(`${this.apiUrl}/test-auth`, config);
+  }
+
   configureEmail(config: OutlookConfigPayload): Observable<{ ok: boolean; data: OutlookConfigResult }> {
     return this.http.post<{ ok: boolean; data: OutlookConfigResult }>(`${this.apiUrl}/configure`, config);
   }

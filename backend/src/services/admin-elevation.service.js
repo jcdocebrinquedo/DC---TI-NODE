@@ -2,7 +2,7 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
-const { exec } = require('node:child_process');
+const { exec, execSync } = require('node:child_process');
 const { promisify } = require('node:util');
 const { dataDir } = require('../utils/paths');
 
@@ -35,9 +35,19 @@ class AdminElevationService {
     }
   }
 
+  isProcessElevated() {
+    if (process.platform !== 'win32') return true;
+    try {
+      const out = execSync('whoami /groups', { stdio: ['ignore', 'pipe', 'ignore'] }).toString();
+      return out.includes('S-1-16-12288') || out.includes('S-1-16-16384');
+    } catch {
+      return false;
+    }
+  }
+
   isElevated(nativeElevated = false) {
     this.load();
-    return Boolean(nativeElevated || this.userConfirmed);
+    return Boolean(nativeElevated || this.isProcessElevated() || this.userConfirmed);
   }
 
   confirmElevation() {

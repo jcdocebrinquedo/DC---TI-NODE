@@ -10,14 +10,18 @@ const { adminElevationService } = require('./admin-elevation.service');
 const { networkDoctorService } = require('./network-doctor.service');
 const { softwareOptimizerService } = require('./software-optimizer.service');
 const { helpdeskToolkitService } = require('./helpdesk-toolkit.service');
+const { driverManagerService } = require('./driver-manager.service');
+const { printerManagerService } = require('./printer-manager.service');
+const { windowsUpdateService } = require('./windows-update.service');
 
 const execAsync = promisify(exec);
 
 class ToolRegistry {
-  constructor({ bridge, cleanupService, repairService }) {
+  constructor({ bridge, cleanupService, repairService, serviceOrderService }) {
     this.bridge = bridge;
     this.cleanupService = cleanupService;
     this.repairService = repairService;
+    this.serviceOrderService = serviceOrderService;
   }
 
   getToolsDefinitions() {
@@ -151,6 +155,70 @@ class ToolRegistry {
         name: 'run_stress_test',
         description: 'Executa um teste rápido de estresse e estabilidade de CPU de 10 segundos para verificar throttling e integridade de processamento.',
         parameters: { type: 'object', properties: {} }
+      },
+      {
+        name: 'scan_drivers_and_updates',
+        description: 'Escaneia dispositivos com erro de driver e verifica atualizações de drivers disponíveis via Windows Update.',
+        parameters: { type: 'object', properties: {} }
+      },
+      {
+        name: 'list_printers',
+        description: 'Lista todas as impressoras instaladas, portas, status e quantidade de trabalhos na fila.',
+        parameters: { type: 'object', properties: {} }
+      },
+      {
+        name: 'windows_update_control',
+        description: 'Consulta status, executa reparo completo, desabilita permanentemente ou reativa o Windows Update.',
+        parameters: {
+          type: 'object',
+          properties: {
+            action: {
+              type: 'string',
+              enum: ['status', 'repair', 'disable_permanent', 'enable'],
+              description: 'Ação desejada no Windows Update.'
+            }
+          },
+          required: ['action']
+        }
+      },
+      {
+        name: 'get_session_audit_log',
+        description: 'Consulta o histórico completo de tudo o que foi realizado no software desde que foi aberto nesta sessão (ações técnicas, limpezas, reparos, diagnósticos e testes executados).',
+        parameters: {
+          type: 'object',
+          properties: {}
+        }
+      },
+      {
+        name: 'generate_service_order',
+        description: 'Gera formalmente a Ordem de Serviço nos formatos DOCX (Microsoft Word), PDF, Markdown (.md) e Texto (.txt) com o design corporativo oficial e a logomarca da empresa.',
+        parameters: {
+          type: 'object',
+          properties: {
+            station_name: {
+              type: 'string',
+              description: 'Nome da estação ou computador (Hostname).'
+            },
+            technician_name: {
+              type: 'string',
+              description: 'Nome do técnico responsável pelo atendimento.'
+            },
+            user_name: {
+              type: 'string',
+              description: 'Nome do usuário ou solicitante atendido (opcional).'
+            },
+            summary: {
+              type: 'string',
+              description: 'Síntese executiva ou resumo técnico gerado pela IA descrevendo os problemas encontrados e as soluções aplicadas.'
+            },
+            actions_performed: {
+              type: 'array',
+              items: { type: 'string' },
+              description: 'Lista detalhada de procedimentos e ações técnicas realizadas durante o atendimento.'
+            }
+          },
+          required: ['station_name', 'technician_name', 'actions_performed']
+        }
       }
     ];
   }
@@ -160,10 +228,16 @@ class ToolRegistry {
 
     switch (name) {
       case 'execute_command': {
-        const shellType = args.shell === 'cmd' ? 'cmd /c' : 'powershell -NoProfile -Command';
-        const fullCmd = `${shellType} "${args.command.replace(/"/g, '\\"')}"`;
+        let fullCmd = '';
+        if (args.shell === 'cmd') {
+          fullCmd = `cmd /c "${String(args.command || '').replace(/"/g, '\\"')}"`;
+        } else {
+          const ps = `[Console]::OutputEncoding = [System.Text.Encoding]::UTF8\n${args.command || ''}`;
+          const encoded = Buffer.from(ps, 'utf16le').toString('base64');
+          fullCmd = `powershell -NoProfile -NonInteractive -EncodedCommand ${encoded}`;
+        }
         try {
-          const { stdout, stderr } = await execAsync(fullCmd, { maxBuffer: 1024 * 1024 * 10 });
+          const { stdout, stderr } = await execAsync(fullCmd, { timeout: 60000, maxBuffer: 1024 * 1024 * 10 });
           return {
             success: true,
             stdout: stdout.trim(),
@@ -242,19 +316,20 @@ class ToolRegistry {
       }
 
       case 'manage_windows_service': {
-        const sName = args.service_name;
-        let ps = '';
+        const sName = String(args.service_name || '').replace(/'/g, "''");
+        let ps = '[Console]::OutputEncoding = [System.Text.Encoding]::UTF8\n';
         if (args.action === 'status') {
-          ps = `Get-Service -Name "${sName}" | Select-Object Name, DisplayName, Status, StartType | ConvertTo-Json`;
+          ps += `Get-Service -Name '${sName}' | Select-Object Name, DisplayName, Status, StartType | ConvertTo-Json`;
         } else if (args.action === 'start') {
-          ps = `Start-Service -Name "${sName}"; Get-Service -Name "${sName}" | Select-Object Name, Status | ConvertTo-Json`;
+          ps += `Start-Service -Name '${sName}'; Get-Service -Name '${sName}' | Select-Object Name, Status | ConvertTo-Json`;
         } else if (args.action === 'stop') {
-          ps = `Stop-Service -Name "${sName}" -Force; Get-Service -Name "${sName}" | Select-Object Name, Status | ConvertTo-Json`;
+          ps += `Stop-Service -Name '${sName}' -Force; Get-Service -Name '${sName}' | Select-Object Name, Status | ConvertTo-Json`;
         } else if (args.action === 'restart') {
-          ps = `Restart-Service -Name "${sName}" -Force; Get-Service -Name "${sName}" | Select-Object Name, Status | ConvertTo-Json`;
+          ps += `Restart-Service -Name '${sName}' -Force; Get-Service -Name '${sName}' | Select-Object Name, Status | ConvertTo-Json`;
         }
         try {
-          const { stdout } = await execAsync(`powershell -NoProfile -Command "${ps}"`);
+          const encoded = Buffer.from(ps, 'utf16le').toString('base64');
+          const { stdout } = await execAsync(`powershell -NoProfile -NonInteractive -EncodedCommand ${encoded}`, { timeout: 30000 });
           return { output: stdout.trim() };
         } catch (e) {
           return { error: e.message };
@@ -338,6 +413,98 @@ class ToolRegistry {
         }
       }
 
+      case 'scan_drivers_and_updates': {
+        try {
+          const [scan, updates] = await Promise.all([
+            driverManagerService.scanDrivers(),
+            driverManagerService.checkDriverUpdates()
+          ]);
+          return {
+            system_manufacturer: scan.system_manufacturer,
+            system_model: scan.system_model,
+            total_drivers: scan.total,
+            drivers_with_errors: scan.drivers.filter(d => d.has_error),
+            available_updates: updates.updates || []
+          };
+        } catch (e) {
+          return { error: e.message };
+        }
+      }
+
+      case 'list_printers': {
+        try {
+          return await printerManagerService.listPrinters();
+        } catch (e) {
+          return { error: e.message };
+        }
+      }
+
+      case 'windows_update_control': {
+        try {
+          if (args.action === 'status') return await windowsUpdateService.getStatus();
+          if (args.action === 'repair') return await windowsUpdateService.repairWindowsUpdate();
+          if (args.action === 'disable_permanent') return await windowsUpdateService.disablePermanently();
+          if (args.action === 'enable') return await windowsUpdateService.enableDefault();
+          return { error: 'Ação inválida para Windows Update.' };
+        } catch (e) {
+          return { error: e.message };
+        }
+      }
+
+      case 'get_session_audit_log': {
+        try {
+          return {
+            station_name: sessionStore.stationName,
+            start_time: sessionStore.startTime,
+            actions_count: sessionStore.actions.length,
+            actions: sessionStore.getActions()
+          };
+        } catch (e) {
+          return { error: e.message };
+        }
+      }
+
+      case 'generate_service_order': {
+        try {
+          if (!this.serviceOrderService) {
+            throw new Error('Serviço de geração de OS não instanciado no ToolRegistry.');
+          }
+
+          let actions = args.actions_performed;
+          if (!Array.isArray(actions) || actions.length === 0) {
+            // Se não veio uma lista de ações explícita, aproveita os registros da sessão
+            const sessionActions = sessionStore.getActions();
+            if (sessionActions.length > 0) {
+              actions = sessionActions.map(a => `${a.timestamp} — ${a.description}`);
+            } else {
+              actions = ['Manutenção preventiva e suporte técnico executado pela equipe de TI.'];
+            }
+          }
+
+          const res = await this.serviceOrderService.generateOrder({
+            station_name: args.station_name || sessionStore.stationName || os.hostname(),
+            technician_name: args.technician_name || 'Técnico de Suporte TI',
+            user_name: args.user_name || '',
+            summary: args.summary || '',
+            actions_performed: actions
+          });
+
+          sessionStore.clear();
+          return {
+            success: true,
+            order_id: res.order_id,
+            created_at: res.created_at_local,
+            docx_path: res.docx_path,
+            pdf_path: res.pdf_path,
+            markdown_path: res.markdown_path,
+            txt_path: res.txt_path,
+            message: `Ordem de Serviço ${res.order_id} gerada com sucesso em DOCX, PDF, MD e TXT com a logomarca da empresa.`
+          };
+        } catch (e) {
+          return { success: false, error: e.message };
+        }
+      }
+
       default:
         return { error: `Ferramenta ${name} não implementada.` };
     }
@@ -345,4 +512,3 @@ class ToolRegistry {
 }
 
 module.exports = { ToolRegistry };
-

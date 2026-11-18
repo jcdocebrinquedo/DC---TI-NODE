@@ -3,15 +3,16 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { finalize } from 'rxjs';
-import { CleanupService, CleanupReport } from './cleanup.service';
+import { CleanupService, CleanupReport, StorageAnalysis } from './cleanup.service';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-cleanup',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatIconModule, MatProgressSpinnerModule, MatDialogModule],
+  imports: [CommonModule, FormsModule, MatIconModule, MatProgressSpinnerModule, MatProgressBarModule, MatDialogModule],
   templateUrl: './cleanup.component.html',
   styleUrls: ['./cleanup.component.css']
 })
@@ -21,9 +22,14 @@ export class CleanupComponent {
   cleanPrefetch = true;
   cleanWindowsUpdate = true;
   flushDns = true;
+  cleanBrowserCache = false;
+  cleanTeamsCache = false;
+  cleanWinSxS = false;
 
   report: CleanupReport | null = null;
+  storageAnalysis: StorageAnalysis | null = null;
   loading = false;
+  loadingAnalysis = false;
 
   constructor(
     private cleanupService: CleanupService,
@@ -33,11 +39,11 @@ export class CleanupComponent {
 
   executarLimpeza(): void {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      width: '420px',
+      width: '440px',
       disableClose: true,
       data: {
-        title: 'Iniciar Limpeza Expressa',
-        message: 'Deseja remover arquivos temporários, logs antigos e esvaziar o cache DNS do sistema?',
+        title: 'Iniciar Limpeza Avançada',
+        message: 'Deseja remover os arquivos temporários e caches selecionados (e esvaziar DNS)?',
         confirmText: 'Limpar Agora',
         type: 'warning'
       }
@@ -53,7 +59,10 @@ export class CleanupComponent {
         clean_windows_temp: this.cleanWindowsTemp,
         clean_prefetch: this.cleanPrefetch,
         clean_windows_update_cache: this.cleanWindowsUpdate,
-        flush_dns_cache: this.flushDns
+        flush_dns_cache: this.flushDns,
+        clean_browser_cache: this.cleanBrowserCache,
+        clean_teams_cache: this.cleanTeamsCache,
+        clean_winsxs: this.cleanWinSxS
       };
 
       this.cleanupService.runCleanup(opts)
@@ -73,5 +82,18 @@ export class CleanupComponent {
         });
     });
   }
-}
 
+  analisarEspaco(): void {
+    this.loadingAnalysis = true;
+    this.cdr.detectChanges();
+    this.cleanupService.analyzeStorage('C:\\')
+      .pipe(finalize(() => { this.loadingAnalysis = false; this.cdr.detectChanges(); }))
+      .subscribe({
+        next: (res) => {
+          this.storageAnalysis = res.data;
+          this.cdr.detectChanges();
+        },
+        error: () => this.cdr.detectChanges()
+      });
+  }
+}
