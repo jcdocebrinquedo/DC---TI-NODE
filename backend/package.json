@@ -23,7 +23,7 @@
   },
   "build": {
     "appId": "br.corporativo.dcti.support",
-    "productName": "DC-TI Support",
+    "productName": "Sistema de manutenção - DC - TI",
     "compression": "normal",
     "directories": {
       "output": "dist"
@@ -31,6 +31,7 @@
     "files": [
       "src/**/*",
       "public/**/*",
+      "assets/**/*",
       "package.json"
     ],
     "extraResources": [
@@ -40,6 +41,7 @@
       }
     ],
     "win": {
+      "icon": "assets/icon.ico",
       "target": [
         "nsis",
         "portable"

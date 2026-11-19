@@ -115,70 +115,9 @@ class ServiceOrderService {
     const baseDir = path.join(serviceOrdersDir(), dateFolder, orderId);
     fs.mkdirSync(baseDir, { recursive: true });
 
-    const mdFile = path.join(baseDir, `${orderId}.md`);
-    const txtFile = path.join(baseDir, `${orderId}.txt`);
-    const docxFile = path.join(baseDir, `${orderId}.docx`);
     const pdfFile = path.join(baseDir, `${orderId}.pdf`);
 
-    // 1. Gera Markdown (.md)
-    let md = '# ORDEM DE SERVIÇO INTERNA - SUPORTE DE TI\n\n';
-    md += `- **Protocolo Interno:** \`${orderId}\`\n`;
-    md += `- **Data/Hora Local:** ${nowFormatted}\n`;
-    md += `- **Nome da Estação (Hostname):** \`${station}\`\n`;
-    md += `- **Técnico Responsável:** ${tech}\n`;
-    if (user) {
-      md += `- **Usuário da Estação:** ${user}\n`;
-    }
-    if (summary) {
-      md += `\n---\n\n## Resumo Técnico (IA)\n\n${summary}\n`;
-    }
-    md += '\n---\n\n## Descrição das Ações Realizadas\n\n';
-    actions.forEach((act, idx) => {
-      md += `${idx + 1}. ${act.trim()}\n`;
-    });
-    md += '\n---\n*Documento técnico de controle interno de TI — Sem valor comercial.*\n';
-
-    fs.writeFileSync(mdFile, md, 'utf8');
-
-    // 2. Gera Texto Puro (.txt)
-    let txt = '========================================================================\n';
-    txt += '               ORDEM DE SERVIÇO INTERNA - SUPORTE DE TI                 \n';
-    txt += '========================================================================\n';
-    txt += `Protocolo Interno : ${orderId}\n`;
-    txt += `Data/Hora (Local) : ${nowFormatted}\n`;
-    txt += `Nome da Estação   : ${station}\n`;
-    txt += `Técnico           : ${tech}\n`;
-    if (user) {
-      txt += `Usuário           : ${user}\n`;
-    }
-    if (summary) {
-      txt += '------------------------------------------------------------------------\n';
-      txt += `RESUMO TÉCNICO (IA):\n${summary}\n`;
-    }
-    txt += '------------------------------------------------------------------------\n';
-    txt += 'DESCRIÇÃO DAS AÇÕES REALIZADAS:\n\n';
-    actions.forEach((act, idx) => {
-      txt += `  [${idx + 1}] ${act.trim()}\n`;
-    });
-    txt += '\n------------------------------------------------------------------------\n';
-    txt += 'Assinatura do Técnico: _________________________________________________\n';
-    txt += '========================================================================\n';
-
-    fs.writeFileSync(txtFile, txt, 'utf8');
-
-    // 3. Gera DOCX elegante com logo
-    await this._generateDocx({
-      filePath: docxFile,
-      orderId,
-      nowFormatted,
-      station,
-      tech,
-      user,
-      summary,
-      actions
-    });
-
-    // 4. Gera PDF com design profissional e logo
+    // Gera exclusivamente o PDF com design profissional e logo
     await this._generatePdf({
       filePath: pdfFile,
       orderId,
@@ -199,9 +138,9 @@ class ServiceOrderService {
       summary,
       actions_performed: actions.map(a => a.trim()),
       order_dir: baseDir,
-      markdown_path: mdFile,
-      txt_path: txtFile,
-      docx_path: docxFile,
+      markdown_path: '',
+      txt_path: '',
+      docx_path: '',
       pdf_path: pdfFile
     };
 

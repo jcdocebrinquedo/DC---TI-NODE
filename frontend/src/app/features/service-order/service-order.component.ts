@@ -240,7 +240,7 @@ export class ServiceOrderComponent implements OnInit {
             disableClose: true,
             data: {
               title: 'Ordem de Serviço Emitida',
-              message: `Ordem de Serviço <strong>${res.data.order_id}</strong> salva no histórico e gerada em <strong>DOCX, PDF, MD e TXT</strong>.<br><br>A sessão atual foi zerada automaticamente para o próximo atendimento.`,
+              message: `Ordem de Serviço <strong>${res.data.order_id}</strong> salva no histórico e gerada em <strong>PDF</strong>.<br><br>A sessão atual foi zerada automaticamente para o próximo atendimento.`,
               type: 'success',
               hideCancel: true
             }

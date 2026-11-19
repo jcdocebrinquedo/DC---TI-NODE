@@ -16,10 +16,10 @@
       </div>
     </div>
 
-    <!-- ABAS DE NAVEGAÇÃO (SEM SEGURANÇA E SEM DRIVERS) -->
-    <div class="toolkit-nav" style="flex-wrap: wrap;">
+    <!-- ABAS DE NAVEGAÇÃO -->
+    <div class="toolkit-nav">
       <div class="tab-btn-wrap">
-        <button type="button" class="tab-btn" [class.active]="activeTab === 'network'" [disabled]="isSubTabLoading('network')" (click)="setTab('network')">
+        <button type="button" class="tab-btn" [class.active]="activeTab === 'network'" [disabled]="activeTab !== 'network' && isSubTabLoading('network')" (click)="setTab('network')">
           <mat-icon>lan</mat-icon>
           <span>Network Doctor</span>
         </button>
@@ -90,8 +90,8 @@
       </div>
     </div>
 
-    <div *ngIf="loadingNetwork || loadingDhcp || loadingPrinters || loadingWinget || loadingInventory || loadingSoftware || uninstallingSoftware || loadingStartup || loadingCrashes || loadingBackup" style="margin-top: 12px;">
-      <div style="font-size: 12.5px; color: #1e3a8a; font-weight: 600; margin-bottom: 6px;">
+    <div *ngIf="loadingNetwork || isSubTabLoading('network') || loadingDhcp || loadingPrinters || loadingWinget || loadingInventory || loadingSoftware || uninstallingSoftware || loadingStartup || loadingCrashes || loadingBackup" style="margin-top: 12px;">
+      <div style="font-size: 12px; color: #1e3a8a; font-weight: 600; margin-bottom: 6px;">
         {{ uninstallingSoftware ? 'Desinstalando software(s) e limpando rastros...' : 'Executando consulta/operação no sistema, aguarde...' }}
       </div>
       <mat-progress-bar mode="indeterminate"></mat-progress-bar>
@@ -102,29 +102,37 @@
   <div class="group-panel panel-expand" *ngIf="activeTab === 'network'">
     <div class="card-header">
       <div class="header-title-row">
-        <mat-icon class="section-icon color-blue">lan</mat-icon>
+        <mat-icon class="section-icon">lan</mat-icon>
         <h3>Network Doctor Corporativo & Portas TCP</h3>
       </div>
-      <div style="display: flex; gap: 8px;">
+      <div class="header-btn-group">
         <button type="button" class="btn-refresh" (click)="renovarDhcp()" [disabled]="loadingDhcp">
-          <mat-progress-spinner *ngIf="loadingDhcp" mode="indeterminate" diameter="16"></mat-progress-spinner>
+          <mat-progress-spinner *ngIf="loadingDhcp" mode="indeterminate" diameter="14"></mat-progress-spinner>
           <mat-icon *ngIf="!loadingDhcp">autorenew</mat-icon>
           <span>Renovar DHCP</span>
         </button>
         <button type="button" class="btn-refresh" (click)="carregarNetwork()" [disabled]="loadingNetwork">
-          <mat-progress-spinner *ngIf="loadingNetwork" mode="indeterminate" diameter="16"></mat-progress-spinner>
+          <mat-progress-spinner *ngIf="loadingNetwork" mode="indeterminate" diameter="14"></mat-progress-spinner>
           <mat-icon *ngIf="!loadingNetwork">refresh</mat-icon>
           <span>Atualizar Testes</span>
         </button>
       </div>
     </div>
 
-    <div *ngIf="loadingNetwork" class="loading-state">
-      <mat-progress-spinner mode="indeterminate" diameter="28"></mat-progress-spinner>
+    <div *ngIf="loadingNetwork || isSubTabLoading('network')" class="loading-state">
+      <mat-progress-spinner mode="indeterminate" diameter="26"></mat-progress-spinner>
       <span>Testando Gateway, DNS, Portas TCP e Unidades Mapeadas...</span>
     </div>
 
-    <div *ngIf="!loadingNetwork && networkData" class="content-body">
+    <div *ngIf="!loadingNetwork && !isSubTabLoading('network') && !networkData" class="loading-state" style="flex-direction: column;">
+      <span class="text-muted">{{ networkError || 'Nenhum resultado de rede disponível ainda.' }}</span>
+      <button type="button" class="btn-refresh" (click)="carregarNetwork()">
+        <mat-icon>refresh</mat-icon>
+        <span>Executar Testes Agora</span>
+      </button>
+    </div>
+
+    <div *ngIf="!loadingNetwork && !isSubTabLoading('network') && networkData" class="content-body">
       <div class="cards-grid">
         <div class="info-card">
           <div class="card-label">Status da Conexão</div>
@@ -145,7 +153,7 @@
         </div>
       </div>
 
-      <div class="table-responsive" style="margin-bottom: 16px;">
+      <div class="table-responsive">
         <table class="data-table">
           <thead>
             <tr><th>Destino / Ping</th><th>Host</th><th>Status</th><th>Latência</th></tr>
@@ -161,7 +169,7 @@
         </table>
       </div>
 
-      <div class="table-responsive" *ngIf="networkData.tcp_ports && networkData.tcp_ports.length > 0" style="margin-bottom: 16px;">
+      <div class="table-responsive" *ngIf="networkData.tcp_ports && networkData.tcp_ports.length > 0">
         <table class="data-table">
           <thead>
             <tr><th>Serviço / Porta TCP</th><th>Host</th><th>Porta</th><th>Estado</th></tr>
@@ -198,7 +206,7 @@
   <div class="group-panel panel-expand" *ngIf="activeTab === 'printers'">
     <div class="card-header">
       <div class="header-title-row">
-        <mat-icon class="section-icon color-blue">print</mat-icon>
+        <mat-icon class="section-icon">print</mat-icon>
         <h3>Gerenciador de Impressoras e Filas</h3>
       </div>
       <button type="button" class="btn-refresh" (click)="carregarImpressoras()" [disabled]="loadingPrinters">
@@ -208,28 +216,30 @@
     </div>
 
     <div *ngIf="loadingPrinters" class="loading-state">
-      <mat-progress-spinner mode="indeterminate" diameter="28"></mat-progress-spinner>
+      <mat-progress-spinner mode="indeterminate" diameter="26"></mat-progress-spinner>
       <span>Carregando impressoras e filas...</span>
     </div>
 
     <div *ngIf="!loadingPrinters" class="table-responsive">
       <table class="data-table">
         <thead>
-          <tr><th>Impressora</th><th>Porta / Tipo</th><th>Status</th><th>Fila</th><th>Ações</th></tr>
+          <tr><th>Impressora</th><th>Porta / Tipo</th><th>Status</th><th>Fila</th><th class="col-actions">Ações</th></tr>
         </thead>
         <tbody>
           <tr *ngFor="let p of printers">
             <td>
               <div class="font-bold">{{ p.name }} <span *ngIf="p.is_default" class="badge badge-success">PADRÃO</span></div>
-              <div style="font-size: 11.5px; color: #64748b;">{{ p.driver_name }}</div>
+              <div class="card-meta">{{ p.driver_name }}</div>
             </td>
             <td class="font-mono">{{ p.port_name }} ({{ p.type }})</td>
             <td><span class="badge" [ngClass]="p.printer_status === 'Normal' ? 'badge-success' : 'badge-warning'">{{ p.printer_status }}</span></td>
             <td>{{ p.jobs_count }} trab.</td>
-            <td style="display: flex; gap: 6px; flex-wrap: wrap;">
-              <button type="button" class="btn-refresh" (click)="limparFilaImpressora(p)">Limpar Fila</button>
-              <button type="button" class="btn-refresh" (click)="definirImpressoraPadrao(p)" *ngIf="!p.is_default">Padrão</button>
-              <button type="button" class="btn-refresh" (click)="imprimirPaginaTeste(p)">Página Teste</button>
+            <td class="col-actions">
+              <div class="table-actions">
+                <button type="button" class="btn-outline btn-sm" (click)="limparFilaImpressora(p)">Limpar Fila</button>
+                <button type="button" class="btn-outline btn-sm" (click)="definirImpressoraPadrao(p)" *ngIf="!p.is_default">Padrão</button>
+                <button type="button" class="btn-outline btn-sm" (click)="imprimirPaginaTeste(p)">Teste</button>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -241,11 +251,11 @@
   <div class="group-panel panel-expand" *ngIf="activeTab === 'winget'">
     <div class="card-header">
       <div class="header-title-row">
-        <mat-icon class="section-icon color-blue">system_update</mat-icon>
+        <mat-icon class="section-icon">system_update</mat-icon>
         <h3>Atualizações de Softwares (Winget)</h3>
       </div>
-      <div style="display: flex; gap: 8px;">
-        <button type="button" class="btn-refresh" *ngIf="wingetPackages.length > 0" (click)="atualizarPacoteWinget('__ALL__')" [disabled]="upgradingWingetId !== null">
+      <div class="header-btn-group">
+        <button type="button" class="btn-primary" *ngIf="wingetPackages.length > 0" (click)="atualizarPacoteWinget('__ALL__')" [disabled]="upgradingWingetId !== null">
           <mat-icon>upgrade</mat-icon>
           <span>Atualizar Todos</span>
         </button>
@@ -256,8 +266,8 @@
       </div>
     </div>
 
-    <div *ngIf="upgradingWingetId !== null" style="margin-bottom: 14px; padding: 12px; background: #eff6ff; border-left: 4px solid #2563eb; border-radius: 6px;">
-      <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px;">
+    <div *ngIf="upgradingWingetId !== null" class="progress-banner">
+      <div class="progress-banner-header">
         <strong style="color: #1e3a8a;">{{ wingetProgressMsg }}</strong>
         <span class="font-mono" style="font-weight: 700; color: #2563eb;">
           {{ wingetProgress }}% <span *ngIf="wingetProgressEta" style="font-weight: 500; color: #475569;">• {{ wingetProgressEta }}</span>
@@ -266,29 +276,29 @@
       <mat-progress-bar mode="determinate" [value]="wingetProgress"></mat-progress-bar>
     </div>
 
-    <div *ngIf="wingetActionMsg" style="margin-bottom: 12px; padding: 10px 14px; background: #dcfce7; color: #166534; border-radius: 8px; font-size: 13px;">
+    <div *ngIf="wingetActionMsg" style="margin-bottom: 12px; padding: 10px 14px; background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; border-radius: 8px; font-size: 13px;">
       {{ wingetActionMsg }}
     </div>
 
     <div *ngIf="loadingWinget" class="loading-state">
-      <mat-progress-spinner mode="indeterminate" diameter="28"></mat-progress-spinner>
+      <mat-progress-spinner mode="indeterminate" diameter="26"></mat-progress-spinner>
       <span>Consultando catálogo Winget...</span>
     </div>
 
     <div *ngIf="!loadingWinget && wingetPackages.length > 0" class="table-responsive">
       <table class="data-table">
         <thead>
-          <tr><th>Aplicativo</th><th>ID</th><th>Atual</th><th>Disponível</th><th>Ação</th></tr>
+          <tr><th>Aplicativo</th><th>ID</th><th>Atual</th><th>Disponível</th><th class="col-actions">Ação</th></tr>
         </thead>
         <tbody>
           <tr *ngFor="let w of wingetPackages">
             <td class="font-bold">{{ w.name }}</td>
             <td class="font-mono">{{ w.id }}</td>
             <td class="font-mono">{{ w.version }}</td>
-            <td class="font-mono" style="color: #16a34a; font-weight: 700;">{{ w.available_version }}</td>
-            <td>
-              <button type="button" class="btn-refresh" (click)="atualizarPacoteWinget(w.id)" [disabled]="upgradingWingetId !== null">
-                <mat-progress-spinner *ngIf="upgradingWingetId === w.id" mode="indeterminate" diameter="14"></mat-progress-spinner>
+            <td class="font-mono text-success font-bold">{{ w.available_version }}</td>
+            <td class="col-actions">
+              <button type="button" class="btn-outline btn-sm" (click)="atualizarPacoteWinget(w.id)" [disabled]="upgradingWingetId !== null">
+                <mat-progress-spinner *ngIf="upgradingWingetId === w.id" mode="indeterminate" diameter="13"></mat-progress-spinner>
                 <span>{{ upgradingWingetId === w.id ? 'Atualizando...' : 'Atualizar' }}</span>
               </button>
             </td>
@@ -297,7 +307,7 @@
       </table>
     </div>
 
-    <div *ngIf="!loadingWinget && wingetPackages.length === 0 && wingetRawOutput" style="padding: 14px; background: #f8fafc; border-radius: 8px; font-family: monospace; font-size: 12px; white-space: pre-wrap;">
+    <div *ngIf="!loadingWinget && wingetPackages.length === 0 && wingetRawOutput" style="padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; font-family: monospace; font-size: 12px; white-space: pre-wrap; overflow-x: auto;">
       {{ wingetRawOutput }}
     </div>
   </div>
@@ -306,7 +316,7 @@
   <div class="group-panel panel-expand" *ngIf="activeTab === 'inventory'">
     <div class="card-header">
       <div class="header-title-row">
-        <mat-icon class="section-icon color-blue">inventory_2</mat-icon>
+        <mat-icon class="section-icon">inventory_2</mat-icon>
         <h3>Inventário Técnico & Desinstalador Avançado</h3>
       </div>
       <button type="button" class="btn-refresh" (click)="carregarInventario(); carregarSoftwaresInstalados()">
@@ -315,50 +325,49 @@
       </button>
     </div>
 
-    <div *ngIf="inventoryData" class="cards-grid" style="margin-bottom: 18px;">
+    <div *ngIf="inventoryData" class="cards-grid" style="margin-bottom: 14px;">
       <div class="info-card">
         <div class="card-label">Equipamento / Serial (Service Tag)</div>
-        <div class="card-value" style="font-size: 14px;">{{ inventoryData.system_manufacturer }} {{ inventoryData.system_model }}</div>
-        <div class="font-mono" style="font-size: 12px; color: #475569;">S/N: {{ inventoryData.serial_number }} | BIOS: {{ inventoryData.bios_version }}</div>
+        <div class="card-value">{{ inventoryData.system_manufacturer }} {{ inventoryData.system_model }}</div>
+        <div class="card-meta font-mono">S/N: {{ inventoryData.serial_number }} | BIOS: {{ inventoryData.bios_version }}</div>
       </div>
       <div class="info-card">
         <div class="card-label">Placa-Mãe & GPU</div>
-        <div class="card-value" style="font-size: 14px;">{{ inventoryData.motherboard }}</div>
-        <div style="font-size: 12px; color: #475569;" *ngFor="let g of inventoryData.gpus">{{ g.name }} ({{ g.driver_version }})</div>
+        <div class="card-value">{{ inventoryData.motherboard }}</div>
+        <div class="card-meta" *ngFor="let g of inventoryData.gpus">{{ g.name }} ({{ g.driver_version }})</div>
       </div>
       <div class="info-card">
         <div class="card-label">Memória RAM ({{ inventoryData.ram_modules.length }}/{{ inventoryData.ram_total_slots }} slots)</div>
-        <div *ngFor="let r of inventoryData.ram_modules" style="font-size: 12px; color: #1e293b;">
+        <div *ngFor="let r of inventoryData.ram_modules" class="card-meta" style="color: #1e293b;">
           <strong>{{ r.slot }}:</strong> {{ r.capacity_gb }} GB @ {{ r.speed_mhz }} MHz ({{ r.manufacturer }})
         </div>
       </div>
       <div class="info-card" *ngIf="inventoryData.windows_license">
         <div class="card-label">Licença Windows</div>
-        <div class="card-value" style="font-size: 14px;">{{ inventoryData.windows_license.status }}</div>
-        <div class="font-mono" style="font-size: 12px; color: #475569;">Final: {{ inventoryData.windows_license.partial_key }}</div>
+        <div class="card-value">{{ inventoryData.windows_license.status }}</div>
+        <div class="card-meta font-mono">Final: {{ inventoryData.windows_license.partial_key }}</div>
       </div>
     </div>
 
     <!-- Barra de filtro e desinstalação em lote -->
-    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px;">
-      <input type="text" [(ngModel)]="softwareFilter" placeholder="Filtrar programas instalados (nome ou fabricante)..."
-        style="flex: 1; min-width: 260px; max-width: 460px; height: 38px; padding: 0 12px; border: 1px solid #cbd5e1; border-radius: 8px;" />
+    <div class="filter-toolbar">
+      <input type="text" [(ngModel)]="softwareFilter" placeholder="Filtrar programas instalados (nome ou fabricante)..." class="toolkit-input" />
 
       <ng-container *ngIf="selectedSoftwareItems.length > 0">
-        <button type="button" class="btn-refresh" style="border-color: #f59e0b; color: #b45309;" (click)="desinstalarSelecionados(false)" [disabled]="uninstallingSoftware">
+        <button type="button" class="btn-subtle-warning" (click)="desinstalarSelecionados(false)" [disabled]="uninstallingSoftware">
           <mat-progress-spinner *ngIf="uninstallingSoftware" mode="indeterminate" diameter="14"></mat-progress-spinner>
-          <span>Desinstalar Selecionados ({{ selectedSoftwareItems.length }}) — Normal</span>
+          <span>Normal ({{ selectedSoftwareItems.length }})</span>
         </button>
-        <button type="button" class="btn-refresh" style="background: #dc2626; color: #ffffff; border: none;" (click)="desinstalarSelecionados(true)" [disabled]="uninstallingSoftware">
+        <button type="button" class="btn-danger-solid" (click)="desinstalarSelecionados(true)" [disabled]="uninstallingSoftware">
           <mat-progress-spinner *ngIf="uninstallingSoftware" mode="indeterminate" diameter="14"></mat-progress-spinner>
           <mat-icon *ngIf="!uninstallingSoftware">delete_forever</mat-icon>
-          <span>Desinstalação Profunda ({{ selectedSoftwareItems.length }}) — Revo</span>
+          <span>Profunda ({{ selectedSoftwareItems.length }})</span>
         </button>
       </ng-container>
     </div>
 
     <div *ngIf="loadingSoftware" class="loading-state">
-      <mat-progress-spinner mode="indeterminate" diameter="28"></mat-progress-spinner>
+      <mat-progress-spinner mode="indeterminate" diameter="26"></mat-progress-spinner>
       <span>Carregando programas instalados...</span>
     </div>
 
@@ -366,32 +375,32 @@
       <table class="data-table">
         <thead>
           <tr>
-            <th style="width: 36px; text-align: center;">
+            <th class="col-check">
               <input type="checkbox" [checked]="allFilteredSelected" (change)="toggleSelectAllFiltered()" title="Selecionar todos visíveis" />
             </th>
             <th>Programa</th>
             <th>Versão</th>
             <th>Fabricante</th>
-            <th style="text-align: right;">Desinstalar</th>
+            <th class="col-actions">Desinstalar</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let s of filteredSoftware">
-            <td style="text-align: center;">
+            <td class="col-check">
               <input type="checkbox" *ngIf="s.uninstall_string" [checked]="isSoftwareSelected(s)" (change)="toggleSoftwareSelection(s)" />
             </td>
             <td class="font-bold">{{ s.name }}</td>
             <td class="font-mono">{{ s.version || '—' }}</td>
             <td>{{ s.publisher || '—' }}</td>
-            <td style="text-align: right; white-space: nowrap;">
-              <ng-container *ngIf="s.uninstall_string">
-                <button type="button" class="btn-refresh" style="margin-right: 6px; color: #b45309;" (click)="desinstalarSoftware(s, false)" [disabled]="uninstallingSoftware">
+            <td class="col-actions">
+              <div class="table-actions" *ngIf="s.uninstall_string">
+                <button type="button" class="btn-subtle-warning btn-sm" (click)="desinstalarSoftware(s, false)" [disabled]="uninstallingSoftware">
                   Normal
                 </button>
-                <button type="button" class="btn-refresh" style="color: #dc2626; border-color: #fca5a5;" (click)="desinstalarSoftware(s, true)" [disabled]="uninstallingSoftware">
+                <button type="button" class="btn-subtle-danger btn-sm" (click)="desinstalarSoftware(s, true)" [disabled]="uninstallingSoftware">
                   Profunda (Revo)
                 </button>
-              </ng-container>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -403,33 +412,33 @@
   <div class="group-panel panel-expand" *ngIf="activeTab === 'startup'">
     <div class="card-header">
       <div class="header-title-row">
-        <mat-icon class="section-icon color-blue">rocket_launch</mat-icon>
+        <mat-icon class="section-icon">rocket_launch</mat-icon>
         <h3>Gerenciador de Inicialização (HKLM / HKCU / Startup / Tarefas)</h3>
       </div>
       <button type="button" class="btn-refresh" (click)="carregarStartup()" [disabled]="loadingStartup">
-        <mat-progress-spinner *ngIf="loadingStartup" mode="indeterminate" diameter="16"></mat-progress-spinner>
+        <mat-progress-spinner *ngIf="loadingStartup" mode="indeterminate" diameter="14"></mat-progress-spinner>
         <mat-icon *ngIf="!loadingStartup">refresh</mat-icon>
         <span>Atualizar</span>
       </button>
     </div>
 
     <div *ngIf="loadingStartup" class="loading-state">
-      <mat-progress-spinner mode="indeterminate" diameter="28"></mat-progress-spinner>
+      <mat-progress-spinner mode="indeterminate" diameter="26"></mat-progress-spinner>
       <span>Carregando entradas de inicialização...</span>
     </div>
 
     <div *ngIf="!loadingStartup && startupList.length > 0" class="table-responsive">
       <table class="data-table">
         <thead>
-          <tr><th>Programa</th><th>Origem</th><th>Comando</th><th>Ação</th></tr>
+          <tr><th>Programa</th><th>Origem</th><th>Comando</th><th class="col-actions">Ação</th></tr>
         </thead>
         <tbody>
           <tr *ngFor="let item of startupList">
             <td class="font-bold">{{ item.name }}</td>
             <td><span class="badge badge-info">{{ item.location }}</span></td>
             <td class="font-mono" style="font-size: 11.5px; word-break: break-all;">{{ item.command }}</td>
-            <td>
-              <button type="button" class="btn-refresh" style="color: #dc2626;" (click)="removerStartup(item)">
+            <td class="col-actions">
+              <button type="button" class="btn-subtle-danger btn-sm" (click)="removerStartup(item)">
                 Desabilitar
               </button>
             </td>
@@ -447,7 +456,7 @@
   <div class="group-panel panel-expand" *ngIf="activeTab === 'crashes'">
     <div class="card-header">
       <div class="header-title-row">
-        <mat-icon class="section-icon color-blue">bug_report</mat-icon>
+        <mat-icon class="section-icon">bug_report</mat-icon>
         <h3>Minidumps (BSOD) & Eventos BugCheck</h3>
       </div>
       <button type="button" class="btn-refresh" (click)="carregarCrashes()" [disabled]="loadingCrashes">
@@ -456,32 +465,38 @@
       </button>
     </div>
 
-    <div *ngIf="!loadingCrashes && crashData">
-      <div *ngIf="crashData.bugchecks && crashData.bugchecks.length > 0" style="margin-bottom: 16px;">
-        <h4>Códigos BugCheck (Event ID 1001)</h4>
-        <table class="data-table">
-          <thead><tr><th>Data/Hora</th><th>Provider</th><th>Detalhes</th></tr></thead>
-          <tbody>
-            <tr *ngFor="let b of crashData.bugchecks">
-              <td>{{ b.time }}</td>
-              <td class="font-mono">{{ b.provider }}</td>
-              <td>{{ b.message }}</td>
-            </tr>
-          </tbody>
-        </table>
+    <div *ngIf="!loadingCrashes && crashData" class="content-body">
+      <div *ngIf="crashData.bugchecks && crashData.bugchecks.length > 0">
+        <h4 class="section-sub-heading">Códigos BugCheck (Event ID 1001)</h4>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead><tr><th>Data/Hora</th><th>Provider</th><th>Detalhes</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let b of crashData.bugchecks">
+                <td style="white-space: nowrap;">{{ b.time }}</td>
+                <td class="font-mono">{{ b.provider }}</td>
+                <td>{{ b.message }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      <h4>Eventos Críticos Recentes (Sistema)</h4>
-      <table class="data-table" *ngIf="crashData.critical_events.length > 0">
-        <thead><tr><th>Data/Hora</th><th>Event ID</th><th>Descrição</th></tr></thead>
-        <tbody>
-          <tr *ngFor="let ev of crashData.critical_events">
-            <td>{{ ev.time }}</td>
-            <td class="font-mono">{{ ev.id }}</td>
-            <td>{{ ev.message }}</td>
-          </tr>
-        </tbody>
-      </table>
+      <div>
+        <h4 class="section-sub-heading">Eventos Críticos Recentes (Sistema)</h4>
+        <div class="table-responsive" *ngIf="crashData.critical_events.length > 0">
+          <table class="data-table">
+            <thead><tr><th>Data/Hora</th><th>Event ID</th><th>Descrição</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let ev of crashData.critical_events">
+                <td style="white-space: nowrap;">{{ ev.time }}</td>
+                <td class="font-mono">{{ ev.id }}</td>
+                <td>{{ ev.message }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -489,24 +504,24 @@
   <div class="group-panel panel-expand" *ngIf="activeTab === 'stress'">
     <div class="card-header">
       <div class="header-title-row">
-        <mat-icon class="section-icon color-blue">bolt</mat-icon>
+        <mat-icon class="section-icon">bolt</mat-icon>
         <h3>Teste de Estresse Multi-Thread da CPU</h3>
       </div>
-      <div style="display: flex; gap: 8px;">
-        <button type="button" class="btn-refresh" style="color: #dc2626;" *ngIf="loadingStress" (click)="pararStressTest()">
+      <div class="header-btn-group">
+        <button type="button" class="btn-subtle-danger" *ngIf="loadingStress" (click)="pararStressTest()">
           <mat-icon>stop</mat-icon>
           <span>Parar Teste</span>
         </button>
-        <button type="button" class="btn-refresh" (click)="executarStressTest()" [disabled]="loadingStress">
-          <mat-progress-spinner *ngIf="loadingStress" mode="indeterminate" diameter="16"></mat-progress-spinner>
+        <button type="button" class="btn-primary" (click)="executarStressTest()" [disabled]="loadingStress">
+          <mat-progress-spinner *ngIf="loadingStress" mode="indeterminate" diameter="14"></mat-progress-spinner>
           <mat-icon *ngIf="!loadingStress">play_arrow</mat-icon>
           <span>{{ loadingStress ? 'Executando (10s)...' : 'Iniciar Teste (10s)' }}</span>
         </button>
       </div>
     </div>
 
-    <div *ngIf="loadingStress" style="margin-bottom: 16px; padding: 12px; background: #eff6ff; border-left: 4px solid #2563eb; border-radius: 6px;">
-      <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px;">
+    <div *ngIf="loadingStress" class="progress-banner">
+      <div class="progress-banner-header">
         <strong style="color: #1e3a8a;">Estressando núcleos da CPU em threads isoladas...</strong>
         <span class="font-mono" style="font-weight: 700; color: #2563eb;">{{ stressProgress }}%</span>
       </div>
@@ -537,7 +552,7 @@
   <div class="group-panel panel-expand" *ngIf="activeTab === 'backup'">
     <div class="card-header">
       <div class="header-title-row">
-        <mat-icon class="section-icon color-blue">folder_zip</mat-icon>
+        <mat-icon class="section-icon">folder_zip</mat-icon>
         <h3>Backup Comprimido Rápido (.tar.zst)</h3>
       </div>
       <button type="button" class="btn-refresh" (click)="carregarBackup()" [disabled]="loadingBackup">
@@ -546,36 +561,37 @@
       </button>
     </div>
 
-    <div *ngIf="!loadingBackup && backupData">
-      <div style="margin-bottom: 12px; font-size: 13.5px;">
+    <div *ngIf="!loadingBackup && backupData" class="content-body">
+      <div style="font-size: 13px;">
         Tamanho total estimado do perfil: <strong>{{ backupData.total_size_gb }} GB</strong>
       </div>
 
-      <table class="data-table" style="margin-bottom: 16px;">
-        <thead><tr><th>Incluir</th><th>Pasta</th><th>Caminho</th><th>Arquivos</th><th>Tamanho</th></tr></thead>
-        <tbody>
-          <tr *ngFor="let f of backupData.folders">
-            <td><input type="checkbox" *ngIf="f.key" [(ngModel)]="backupSelectedFolders[f.key]" /></td>
-            <td class="font-bold">{{ f.folder }}</td>
-            <td class="font-mono" style="font-size: 12px;">{{ f.path }}</td>
-            <td>{{ f.files_count }}</td>
-            <td class="font-bold">{{ f.size_mb }} MB</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead><tr><th class="col-check">Incluir</th><th>Pasta</th><th>Caminho</th><th>Arquivos</th><th>Tamanho</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let f of backupData.folders">
+              <td class="col-check"><input type="checkbox" *ngIf="f.key" [(ngModel)]="backupSelectedFolders[f.key]" /></td>
+              <td class="font-bold">{{ f.folder }}</td>
+              <td class="font-mono" style="font-size: 12px; word-break: break-all;">{{ f.path }}</td>
+              <td>{{ f.files_count }}</td>
+              <td class="font-bold">{{ f.size_mb }} MB</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-      <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-        <input type="text" [(ngModel)]="backupDestination" placeholder="Pasta de destino do arquivo .tar (ex: D:\Backup_DC_TI)"
-          style="flex: 1; min-width: 260px; height: 40px; padding: 0 12px; border: 1px solid #cbd5e1; border-radius: 8px;" />
-        <button type="button" class="btn-refresh" style="background: #2563eb; color: #fff; border: none;" (click)="executarBackupTar()" [disabled]="loadingBackupRun">
-          <mat-progress-spinner *ngIf="loadingBackupRun" mode="indeterminate" diameter="16"></mat-progress-spinner>
+      <div class="backup-toolbar">
+        <input type="text" [(ngModel)]="backupDestination" placeholder="Pasta de destino do arquivo .tar (ex: D:\Backup_DC_TI)" class="toolkit-input backup-input" />
+        <button type="button" class="btn-primary" (click)="executarBackupTar()" [disabled]="loadingBackupRun">
+          <mat-progress-spinner *ngIf="loadingBackupRun" mode="indeterminate" diameter="14"></mat-progress-spinner>
           <mat-icon *ngIf="!loadingBackupRun">archive</mat-icon>
           <span>{{ loadingBackupRun ? 'Comprimindo (.tar.zst)...' : 'Gerar Backup (.tar.zst)' }}</span>
         </button>
       </div>
 
-      <div *ngIf="loadingBackupRun" style="margin-top: 14px; padding: 12px; background: #eff6ff; border-left: 4px solid #2563eb; border-radius: 6px;">
-        <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px;">
+      <div *ngIf="loadingBackupRun" class="progress-banner" style="margin-bottom: 0;">
+        <div class="progress-banner-header">
           <strong style="color: #1e3a8a;">{{ backupProgressMsg }}</strong>
           <span class="font-mono" style="font-weight: 700; color: #2563eb;">
             {{ backupProgress }}% <span *ngIf="backupProgressEta" style="font-weight: 500; color: #475569;">• {{ backupProgressEta }}</span>
@@ -584,7 +600,7 @@
         <mat-progress-bar mode="determinate" [value]="backupProgress"></mat-progress-bar>
       </div>
 
-      <div *ngIf="backupRunResult" style="margin-top: 16px; padding: 14px; background: #dcfce7; border-radius: 8px; color: #166534; font-size: 13px;">
+      <div *ngIf="backupRunResult" style="padding: 12px 14px; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; color: #065f46; font-size: 13px;">
         <div><strong>Arquivo .tar gerado:</strong> <span class="font-mono">{{ backupRunResult.tar_path }}</span> ({{ backupRunResult.size_mb }} MB)</div>
         <div style="margin-top: 4px;">
           <strong>Verificação de Integridade:</strong> {{ backupRunResult.archived_files_count }} arquivo(s) confirmados no .tar de {{ backupRunResult.total_source_files }} na origem.
@@ -602,12 +618,12 @@
   <div class="group-panel panel-expand" *ngIf="activeTab === 'runbooks'">
     <div class="card-header">
       <div class="header-title-row">
-        <mat-icon class="section-icon color-blue">checklist_rtl</mat-icon>
+        <mat-icon class="section-icon">checklist_rtl</mat-icon>
         <h3>Runbooks Guiados, IDs Remotos & Ferramentas Windows</h3>
       </div>
     </div>
 
-    <div *ngIf="remoteIds" class="cards-grid" style="margin-bottom: 18px;">
+    <div *ngIf="remoteIds" class="cards-grid" style="margin-bottom: 14px;">
       <div class="info-card">
         <div class="card-label">AnyDesk ID</div>
         <div class="card-value font-mono">{{ remoteIds.anydesk || 'Não detectado' }}</div>
@@ -622,19 +638,19 @@
       </div>
     </div>
 
-    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px;">
-      <button type="button" class="btn-refresh" (click)="abrirFerramentaNativa('devmgmt')">Gerenciador de Dispositivos</button>
-      <button type="button" class="btn-refresh" (click)="abrirFerramentaNativa('services')">Serviços (services.msc)</button>
-      <button type="button" class="btn-refresh" (click)="abrirFerramentaNativa('eventvwr')">Visualizador de Eventos</button>
-      <button type="button" class="btn-refresh" (click)="abrirFerramentaNativa('appwiz')">Programas e Recursos</button>
-      <button type="button" class="btn-refresh" (click)="abrirFerramentaNativa('msconfig')">Configuração do Sistema</button>
+    <div class="shortcuts-bar">
+      <button type="button" class="btn-outline" (click)="abrirFerramentaNativa('devmgmt')">Gerenciador de Dispositivos</button>
+      <button type="button" class="btn-outline" (click)="abrirFerramentaNativa('services')">Serviços (services.msc)</button>
+      <button type="button" class="btn-outline" (click)="abrirFerramentaNativa('eventvwr')">Visualizador de Eventos</button>
+      <button type="button" class="btn-outline" (click)="abrirFerramentaNativa('appwiz')">Programas e Recursos</button>
+      <button type="button" class="btn-outline" (click)="abrirFerramentaNativa('msconfig')">Configuração do Sistema</button>
     </div>
 
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px;">
-      <div *ngFor="let rb of runbooks" style="padding: 16px; border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc;">
-        <h4 style="margin: 0 0 12px; color: #1e3a8a;">{{ rb.title }}</h4>
-        <label *ngFor="let st of rb.steps" style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; cursor: pointer; font-size: 13px;">
-          <input type="checkbox" [checked]="st.done" (change)="marcarPassoRunbook(st)" />
+    <div class="runbooks-grid">
+      <div *ngFor="let rb of runbooks" class="runbook-card">
+        <h4>{{ rb.title }}</h4>
+        <label *ngFor="let st of rb.steps" class="runbook-step">
+          <input type="checkbox" [checked]="st.done" (change)="marcarPassoRunbook(st)" style="margin-top: 2px;" />
           <span [style.text-decoration]="st.done ? 'line-through' : 'none'" [style.color]="st.done ? '#64748b' : '#0f172a'">{{ st.label }}</span>
         </label>
       </div>

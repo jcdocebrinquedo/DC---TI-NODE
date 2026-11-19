@@ -10,7 +10,7 @@
         <div class="page-title-box">
           <h1>Emissão de Ordem de Serviço Interna (TI)</h1>
           <div class="page-subtitle">
-            Consolidação da sessão em cache, resumo por IA e exportação oficial em DOCX, PDF, Markdown e Texto
+            Consolidação da sessão em cache, resumo por IA e exportação oficial em PDF
           </div>
         </div>
       </div>
@@ -118,15 +118,11 @@
       <button type="button" class="btn-generate" (click)="gerarOrdemServico()" [disabled]="loadingGenerate">
         <mat-progress-spinner *ngIf="loadingGenerate" mode="indeterminate" diameter="18"></mat-progress-spinner>
         <mat-icon *ngIf="!loadingGenerate">print</mat-icon>
-        <span>{{ loadingGenerate ? 'Gerando DOCX e PDF...' : 'Gerar Ordem de Serviço (DOCX / PDF)' }}</span>
+        <span>{{ loadingGenerate ? 'Gerando PDF...' : 'Gerar Ordem de Serviço (PDF)' }}</span>
       </button>
 
       <div class="generated-files" *ngIf="result">
         <span class="badge-ok">Última OS: {{ result.order_id }}</span>
-        <button type="button" class="btn-file" *ngIf="result.docx_path" (click)="abrirArquivo(result.docx_path)">
-          <mat-icon>article</mat-icon>
-          <span>Localizar DOCX</span>
-        </button>
         <button type="button" class="btn-file" *ngIf="result.pdf_path" (click)="abrirArquivo(result.pdf_path)">
           <mat-icon>picture_as_pdf</mat-icon>
           <span>Localizar PDF</span>
@@ -166,9 +162,6 @@
               </button>
               <button type="button" class="btn-file-mini" *ngIf="h.pdf_path" (click)="abrirArquivo(h.pdf_path)" title="Localizar PDF">
                 <mat-icon>picture_as_pdf</mat-icon>
-              </button>
-              <button type="button" class="btn-file-mini" *ngIf="h.docx_path" (click)="abrirArquivo(h.docx_path)" title="Localizar DOCX">
-                <mat-icon>article</mat-icon>
               </button>
               <button type="button" class="btn-remove" (click)="excluirHistorico(h)" title="Excluir do histórico">
                 <mat-icon>delete_outline</mat-icon>

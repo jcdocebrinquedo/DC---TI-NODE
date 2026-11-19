@@ -85,19 +85,23 @@ export interface ConfirmDialogData {
     .close-btn { border: none; background: transparent; cursor: pointer; color: #94a3b8; }
     .modal-body { padding: 24px; font-size: 14px; color: #334155; line-height: 1.5; }
     .modal-footer {
-      display: flex; align-items: center; justify-content: flex-end; gap: 12px;
-      padding: 16px 24px; border-top: 1px solid #f1f5f9; background: #ffffff;
+      display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap;
+      padding: 14px 20px; border-top: 1px solid #f1f5f9; background: #ffffff;
     }
     .btn-cancel {
-      padding: 0 18px; height: 38px; border-radius: 8px; border: 1.5px solid #cbd5e1;
-      background: #ffffff; color: #475569; font-weight: 600; font-size: 13px; cursor: pointer;
+      padding: 0 13px; height: 32px; border-radius: 7px; border: 1px solid #e2e8f0;
+      background: #ffffff; color: #334155; font-weight: 600; font-size: 12.5px; cursor: pointer;
     }
+    .btn-cancel:hover { background: #f8fafc; border-color: #cbd5e1; color: #0f172a; }
     .btn-confirm {
-      padding: 0 20px; height: 38px; border-radius: 8px; border: none;
-      background: #2563eb; color: #ffffff; font-weight: 600; font-size: 13px; cursor: pointer;
+      padding: 0 14px; height: 32px; border-radius: 7px; border: 1px solid #2563eb;
+      background: #2563eb; color: #ffffff; font-weight: 600; font-size: 12.5px; cursor: pointer;
     }
-    .btn-confirm.danger { background: #ef4444; }
-    .btn-confirm.warning { background: #f59e0b; }
+    .btn-confirm:hover { background: #1d4ed8; border-color: #1d4ed8; }
+    .btn-confirm.danger { background: #dc2626; border-color: #dc2626; }
+    .btn-confirm.danger:hover { background: #b91c1c; border-color: #b91c1c; }
+    .btn-confirm.warning { background: #d97706; border-color: #d97706; }
+    .btn-confirm.warning:hover { background: #b45309; border-color: #b45309; }
   `]
 })
 export class ConfirmDialogComponent {

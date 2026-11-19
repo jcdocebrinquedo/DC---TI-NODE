@@ -1,6 +1,6 @@
 'use strict';
 
-const { app, BrowserWindow, dialog } = require('electron');
+const { app, BrowserWindow, dialog, Menu } = require('electron');
 const path = require('node:path');
 const { spawn } = require('node:child_process');
 const { adminElevationService } = require('../services/admin-elevation.service');
@@ -40,7 +40,7 @@ function ensureElevatedOrRelaunch() {
     console.error('[Elevation] Falha ao elevar para Administrador:', e.message);
     dialog.showErrorBox(
       'Privilégios de Administrador Necessários',
-      'O DC-TI Support Suite requer execução como Administrador para operar corretamente.'
+      'O Sistema de manutenção - DC - TI requer execução como Administrador para operar corretamente.'
     );
     app.exit(1);
     return false;
@@ -60,19 +60,25 @@ if (!ensureElevatedOrRelaunch()) {
     const server = await startServer(process.env.PORT ? Number(process.env.PORT) : 0);
     const actualPort = server.address()?.port || 3000;
 
+    Menu.setApplicationMenu(null);
+
     mainWindow = new BrowserWindow({
       width: 1200,
       height: 800,
       minWidth: 1000,
       minHeight: 680,
-      title: 'DC-TI Support Suite (Administrador)',
+      title: 'Sistema de manutenção - DC - TI',
+      icon: path.join(__dirname, '..', '..', 'assets', 'icon.ico'),
       backgroundColor: '#f8fafc',
-      autoHideMenuBar: false,
+      autoHideMenuBar: true,
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true
       }
     });
+
+    mainWindow.setMenuBarVisibility(false);
+    mainWindow.removeMenu();
 
     mainWindow.webContents.on('console-message', (event, level, message, line, sourceId) => {
       console.log(`[Renderer Console] ${message} (${sourceId}:${line})`);

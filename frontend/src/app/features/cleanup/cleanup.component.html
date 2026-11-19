@@ -15,8 +15,8 @@
         </div>
       </div>
       <div>
-        <button type="button" class="btn-clean" style="background: #0f766e;" (click)="analisarEspaco()" [disabled]="loadingAnalysis">
-          <mat-progress-spinner *ngIf="loadingAnalysis" mode="indeterminate" diameter="16"></mat-progress-spinner>
+        <button type="button" class="btn-teal" (click)="analisarEspaco()" [disabled]="loadingAnalysis">
+          <mat-progress-spinner *ngIf="loadingAnalysis" mode="indeterminate" diameter="14"></mat-progress-spinner>
           <mat-icon *ngIf="!loadingAnalysis">pie_chart</mat-icon>
           <span>{{ loadingAnalysis ? 'Mapeando pastas...' : 'Analisar Espaço em C:\\' }}</span>
         </button>
@@ -27,7 +27,7 @@
   <!-- GRUPO 2: OPÇÕES DE LIMPEZA -->
   <div class="group-panel">
     <div class="card-header">
-      <mat-icon class="section-icon color-blue">tune</mat-icon>
+      <mat-icon class="section-icon">tune</mat-icon>
       <h3>Opções de Remoção de Arquivos Residuais</h3>
     </div>
 
@@ -68,14 +68,14 @@
 
     <div class="action-bar">
       <button type="button" class="btn-clean" (click)="executarLimpeza()" [disabled]="loading">
-        <mat-progress-spinner *ngIf="loading" mode="indeterminate" diameter="18"></mat-progress-spinner>
+        <mat-progress-spinner *ngIf="loading" mode="indeterminate" diameter="14"></mat-progress-spinner>
         <mat-icon *ngIf="!loading">auto_delete</mat-icon>
         <span>{{ loading ? 'Removendo arquivos temporários...' : 'Executar Limpeza Selecionada' }}</span>
       </button>
     </div>
 
-    <div *ngIf="loading || loadingAnalysis" style="margin-top: 14px;">
-      <div style="font-size: 12.5px; color: #1e3a8a; font-weight: 600; margin-bottom: 6px;">
+    <div *ngIf="loading || loadingAnalysis" style="margin-top: 12px;">
+      <div style="font-size: 12px; color: #1e3a8a; font-weight: 600; margin-bottom: 6px;">
         {{ loading ? 'Executando limpeza selecionada (arquivos temporários, caches / WinSxS)...' : 'Mapeando consumo de espaço em C:\\...' }}
       </div>
       <mat-progress-bar mode="indeterminate"></mat-progress-bar>
@@ -85,14 +85,14 @@
   <!-- GRUPO 3: RELATÓRIO DA LIMPEZA -->
   <div class="group-panel" *ngIf="report">
     <div class="card-header">
-      <mat-icon class="section-icon color-blue">task_alt</mat-icon>
+      <mat-icon class="section-icon">task_alt</mat-icon>
       <h3>Relatório de Liberação de Disco</h3>
     </div>
 
     <div class="summary-cards">
       <div class="summary-box">
         <span class="box-label">Espaço Total Liberado:</span>
-        <span class="badge badge-success font-bold" style="font-size: 14px;">{{ report.megabytes_freed }} MB</span>
+        <span class="badge badge-success font-bold" style="font-size: 13px;">{{ report.megabytes_freed }} MB</span>
       </div>
       <div class="summary-box">
         <span class="box-label">Arquivos Removidos:</span>
@@ -116,26 +116,26 @@
   <!-- GRUPO 4: ANALISADOR DE ESPAÇO EM DISCO -->
   <div class="group-panel panel-expand" *ngIf="storageAnalysis">
     <div class="card-header">
-      <mat-icon class="section-icon color-blue">folder_special</mat-icon>
+      <mat-icon class="section-icon">folder_special</mat-icon>
       <h3>Maiores Consumidores de Espaço em {{ storageAnalysis.drive }} ({{ storageAnalysis.analyzed_at_local }})</h3>
     </div>
 
     <div class="table-responsive">
-      <table class="data-table" style="width: 100%; border-collapse: collapse; font-size: 13px;">
+      <table class="data-table">
         <thead>
-          <tr style="background: #f8fafc; text-align: left;">
-            <th style="padding: 10px;">Pasta / Perfil</th>
-            <th style="padding: 10px;">Caminho</th>
-            <th style="padding: 10px;">Tamanho (MB)</th>
-            <th style="padding: 10px;">Tamanho (GB)</th>
+          <tr>
+            <th>Pasta / Perfil</th>
+            <th>Caminho</th>
+            <th>Tamanho (MB)</th>
+            <th>Tamanho (GB)</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let f of storageAnalysis.folders" style="border-bottom: 1px solid #f1f5f9;">
-            <td style="padding: 10px; font-weight: 600;">{{ f.label }}</td>
-            <td style="padding: 10px; font-family: monospace; color: #475569;">{{ f.path }}</td>
-            <td style="padding: 10px;">{{ f.size_mb }} MB</td>
-            <td style="padding: 10px; font-weight: 700; color: #1d4ed8;">{{ f.size_gb }} GB</td>
+          <tr *ngFor="let f of storageAnalysis.folders">
+            <td class="font-bold">{{ f.label }}</td>
+            <td class="font-mono" style="color: #475569; word-break: break-all;">{{ f.path }}</td>
+            <td>{{ f.size_mb }} MB</td>
+            <td class="font-bold" style="color: #1d4ed8;">{{ f.size_gb }} GB</td>
           </tr>
         </tbody>
       </table>

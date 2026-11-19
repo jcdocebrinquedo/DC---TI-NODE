@@ -25,7 +25,7 @@ export class HostnameComponent implements OnInit {
     private hostnameService: HostnameService,
     private dialog: MatDialog,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.carregarDados();
@@ -35,8 +35,8 @@ export class HostnameComponent implements OnInit {
     this.loadingCarregar = true;
     this.cdr.detectChanges();
     this.hostnameService.getInfo()
-      .pipe(finalize(() => { 
-        this.loadingCarregar = false; 
+      .pipe(finalize(() => {
+        this.loadingCarregar = false;
         this.cdr.detectChanges();
       }))
       .subscribe({
@@ -83,8 +83,8 @@ export class HostnameComponent implements OnInit {
       this.loadingAlterar = true;
       this.cdr.detectChanges();
       this.hostnameService.setHostname(target)
-        .pipe(finalize(() => { 
-          this.loadingAlterar = false; 
+        .pipe(finalize(() => {
+          this.loadingAlterar = false;
           this.cdr.detectChanges();
         }))
         .subscribe({

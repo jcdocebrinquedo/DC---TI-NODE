@@ -13,7 +13,8 @@ import { TabPreloaderService } from './core/services/tab-preloader.service';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
-  title = 'DC-TI Support Suite';
+  title = 'Sistema de manutenção - DC - TI';
+  mobileMenuOpen = false;
 
   constructor(
     public preloader: TabPreloaderService,
@@ -27,10 +28,20 @@ export class AppComponent implements OnInit {
     });
   }
 
+  toggleMobileMenu(): void {
+    this.mobileMenuOpen = !this.mobileMenuOpen;
+  }
+
+  closeMobileMenu(): void {
+    this.mobileMenuOpen = false;
+  }
+
   onNavClick(event: Event, key: string): void {
     if (this.preloader.isLoading(key)) {
       event.preventDefault();
       event.stopPropagation();
+      return;
     }
+    this.mobileMenuOpen = false;
   }
 }

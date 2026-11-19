@@ -1,8 +1,8 @@
 .card-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: 10px;
+  margin-bottom: 14px;
   padding-bottom: 10px;
   border-bottom: 1px solid #f1f5f9;
 }
@@ -15,66 +15,76 @@
 }
 
 .section-icon {
-  font-size: 20px;
+  font-size: 19px;
+  width: 19px;
+  height: 19px;
   color: #2563eb;
 }
 
 .score-container {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 20px;
+  flex-wrap: wrap;
 }
 
 .score-circle {
-  width: 90px;
-  height: 90px;
+  width: 82px;
+  height: 82px;
   border-radius: 50%;
-  border: 6px solid #10b981;
+  border: 5px solid #10b981;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .score-number {
-  font-size: 28px;
+  font-size: 25px;
   font-weight: 800;
   line-height: 1;
 }
 
 .score-scale {
-  font-size: 11px;
+  font-size: 10.5px;
   color: #64748b;
   font-weight: 700;
 }
 
+.score-details {
+  min-width: 0;
+  flex: 1 1 200px;
+}
+
 .score-verdict {
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 700;
   color: #0f172a;
 }
 
 .score-sub {
-  font-size: 13px;
+  font-size: 12.5px;
   color: #64748b;
-  margin-top: 4px;
+  margin-top: 3px;
 }
 
 .metrics-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
 }
 
 .metric-card {
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 10px;
-  padding: 14px 18px;
+  padding: 13px 16px;
+  min-width: 0;
 }
 
 .metric-label {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   color: #64748b;
   text-transform: uppercase;
@@ -82,16 +92,18 @@
 }
 
 .metric-val {
-  font-size: 15px;
+  font-size: 14.5px;
   font-weight: 700;
   color: #0f172a;
   margin-top: 4px;
+  word-break: break-word;
 }
 
 .metric-sub {
   font-size: 12px;
   color: #475569;
   margin-top: 2px;
+  line-height: 1.4;
 }
 
 .loading-box {
@@ -99,22 +111,36 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 48px;
-  gap: 16px;
+  padding: 36px 20px;
+  gap: 14px;
+  text-align: center;
 }
 
 .btn-refresh {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  height: 38px;
-  padding: 0 16px;
-  border: 1px solid #cbd5e1;
   background: #ffffff;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 13px;
   color: #334155;
+  border-color: #e2e8f0;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
 }
 
+.btn-refresh:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+@media (max-width: 600px) {
+  .score-container {
+    gap: 14px;
+  }
+  .score-circle {
+    width: 72px;
+    height: 72px;
+  }
+  .score-number {
+    font-size: 22px;
+  }
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+}

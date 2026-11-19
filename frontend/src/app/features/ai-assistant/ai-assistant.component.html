@@ -10,20 +10,16 @@
         <div class="page-title-box">
           <h1>Suporte Autônomo com IA (Doce LLM Gateway + MCP)</h1>
           <div class="page-subtitle">
-            Agente inteligente com acesso total ao sistema operacional para diagnósticos, manutenções e reparos automatizados
+            Agente inteligente com acesso total ao sistema operacional para diagnósticos, manutenções e reparos
+            automatizados
           </div>
         </div>
       </div>
       <div class="header-actions">
         <!-- BOTÃO TOGGLE ADMIN (CLICÁVEL: TRUE / FALSE) -->
-        <button
-          type="button"
-          class="admin-toggle-btn"
-          [ngClass]="adminElevated ? 'admin-active' : 'admin-inactive'"
-          (click)="alternarAdmin()"
-          [disabled]="loadingAdmin"
-          [title]="adminElevated ? 'Privilégios de Administrador ATIVOS (admin_elevated: true). Clique para mudar para FALSE.' : 'Privilégios de Administrador INATIVOS (admin_elevated: false). Clique para mudar para TRUE.'"
-        >
+        <button type="button" class="admin-toggle-btn" [ngClass]="adminElevated ? 'admin-active' : 'admin-inactive'"
+          (click)="alternarAdmin()" [disabled]="loadingAdmin"
+          [title]="adminElevated ? 'Privilégios de Administrador ATIVOS (admin_elevated: true). Clique para mudar para FALSE.' : 'Privilégios de Administrador INATIVOS (admin_elevated: false). Clique para mudar para TRUE.'">
           <mat-progress-spinner *ngIf="loadingAdmin" mode="indeterminate" diameter="16"></mat-progress-spinner>
           <mat-icon *ngIf="!loadingAdmin">{{ adminElevated ? 'verified_user' : 'gpp_maybe' }}</mat-icon>
           <span class="toggle-label">Admin:</span>
@@ -51,7 +47,8 @@
     <div class="form-grid">
       <div class="field-item">
         <label>URL do Doce LLM Gateway:</label>
-        <input type="text" [(ngModel)]="config.gatewayUrl" placeholder="http://localhost:3000" class="custom-input font-mono" />
+        <input type="text" [(ngModel)]="config.gatewayUrl" placeholder="http://localhost:3000"
+          class="custom-input font-mono" />
       </div>
 
       <div class="field-item">
@@ -72,7 +69,8 @@
 
       <div class="field-item">
         <label>Modelo:</label>
-        <input type="text" [(ngModel)]="config.model" placeholder="gemini-2.5-flash ou gpt-4o" class="custom-input font-mono" />
+        <input type="text" [(ngModel)]="config.model" placeholder="gemini-2.5-flash ou gpt-4o"
+          class="custom-input font-mono" />
       </div>
     </div>
 
@@ -88,13 +86,15 @@
   <!-- GRUPO PRINCIPAL: CHAT & TERMINAL INTERATIVO (EXPANDE VERTICALMENTE) -->
   <div class="group-panel panel-expand">
     <div class="chat-wrapper">
-      
+
       <!-- Histórico de Mensagens -->
       <div class="messages-container">
-        <div *ngFor="let m of messages" class="message-bubble" [ngClass]="m.role === 'user' ? 'user-bubble' : 'assistant-bubble'">
+        <div *ngFor="let m of messages" class="message-bubble"
+          [ngClass]="m.role === 'user' ? 'user-bubble' : 'assistant-bubble'">
           <div class="message-header">
             <mat-icon class="bubble-icon">{{ m.role === 'user' ? 'account_circle' : 'smart_toy' }}</mat-icon>
-            <span class="bubble-sender">{{ m.role === 'user' ? 'Técnico / Usuário' : 'Agente DC-TI (MCP Autônomo)' }}</span>
+            <span class="bubble-sender">{{ m.role === 'user' ? 'Técnico / Usuário' : 'Agente DC-TI (MCP Autônomo)'
+              }}</span>
           </div>
           <div class="message-body" [innerHTML]="formatContent(m.content)"></div>
         </div>
@@ -112,7 +112,8 @@
       <div class="quick-actions-bar">
         <div class="quick-title">Sugestões de Manutenção:</div>
         <div class="quick-tags">
-          <button *ngFor="let q of quickActions" type="button" class="tag-btn" (click)="enviarMensagem(q)" [disabled]="loading">
+          <button *ngFor="let q of quickActions" type="button" class="tag-btn" (click)="enviarMensagem(q)"
+            [disabled]="loading">
             {{ q }}
           </button>
         </div>
@@ -120,14 +121,9 @@
 
       <!-- Input de Envio -->
       <div class="chat-input-bar">
-        <textarea
-          [(ngModel)]="userInput"
-          placeholder="Descreva o problema ou o que deseja que o agente faça no computador..."
-          class="chat-textarea"
-          (keydown.enter)="$event.preventDefault(); enviarMensagem()"
-          [disabled]="loading"
-          rows="2"
-        ></textarea>
+        <textarea [(ngModel)]="userInput"
+          placeholder="Descreva o problema ou o que deseja que o agente faça no computador..." class="chat-textarea"
+          (keydown.enter)="$event.preventDefault(); enviarMensagem()" [disabled]="loading" rows="2"></textarea>
         <button type="button" class="btn-send" (click)="enviarMensagem()" [disabled]="loading || !userInput.trim()">
           <mat-icon>send</mat-icon>
           <span>Executar</span>
@@ -138,4 +134,3 @@
   </div>
 
 </div>
-

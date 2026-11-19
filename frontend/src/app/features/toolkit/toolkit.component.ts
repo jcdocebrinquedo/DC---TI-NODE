@@ -37,6 +37,7 @@ export class ToolkitComponent implements OnInit {
 
   // Dados
   networkData: NetworkDiagnostics | null = null;
+  networkError: string | null = null;
   startupList: StartupProgram[] = [];
   crashData: CrashReport | null = null;
   stressResult: StressTestResult | null = null;
@@ -123,7 +124,18 @@ export class ToolkitComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.preloader.stateChanged$.subscribe(() => this.cdr.detectChanges());
+    this.preloader.stateChanged$.subscribe(() => {
+      if (this.activeTab === 'network' && !this.networkData) {
+        const st = this.preloader.getState('tk:network');
+        if (st.status === 'ready' && st.data) {
+          this.networkData = st.data;
+          this.networkError = null;
+        } else if (st.status === 'error' && !this.loadingNetwork && !this.networkError) {
+          this.carregarNetwork();
+        }
+      }
+      this.cdr.detectChanges();
+    });
     this.hydrateOrLoadTab('network');
   }
 
@@ -137,15 +149,20 @@ export class ToolkitComponent implements OnInit {
   }
 
   setTab(tab: ToolkitTab): void {
-    if (this.isSubTabLoading(tab)) return;
+    if (tab !== this.activeTab && this.isSubTabLoading(tab)) return;
     this.activeTab = tab;
     this.hydrateOrLoadTab(tab);
   }
 
   private hydrateOrLoadTab(tab: ToolkitTab): void {
     if (tab === 'network' && !this.networkData) {
-      const c = this.preloader.getCachedData<NetworkDiagnostics>('tk:network');
-      if (c) this.networkData = c; else this.carregarNetwork();
+      const st = this.preloader.getState('tk:network');
+      if (st.status === 'ready' && st.data) {
+        this.networkData = st.data;
+        this.networkError = null;
+      } else if (st.status !== 'loading') {
+        this.carregarNetwork();
+      }
     }
     if (tab === 'printers' && this.printers.length === 0) {
       const c = this.preloader.getCachedData<PrinterItem[]>('tk:printers');
@@ -181,11 +198,20 @@ export class ToolkitComponent implements OnInit {
   // --- NETWORK ---
   carregarNetwork(): void {
     this.loadingNetwork = true;
+    this.networkError = null;
     this.cdr.detectChanges();
     this.featuresService.getNetworkDoctor()
       .pipe(finalize(() => { this.loadingNetwork = false; this.cdr.detectChanges(); }))
       .subscribe({
-        next: (res) => { this.networkData = res.data; this.cdr.detectChanges(); }
+        next: (res) => {
+          this.networkData = res.data;
+          this.preloader.setReadyData('tk:network', res.data);
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          this.networkError = err?.error?.error?.message || err?.message || 'Não foi possível executar os testes de rede.';
+          this.cdr.detectChanges();
+        }
       });
   }
 

@@ -8,12 +8,7 @@ const args = process.argv.slice(2);
 const builderArgs = args.length > 0 ? args : ['--win', 'portable', '--x64'];
 
 const backendDir = path.resolve(__dirname, '..');
-const localBuilderBin = path.join(
-  backendDir,
-  'node_modules',
-  '.bin',
-  process.platform === 'win32' ? 'electron-builder.cmd' : 'electron-builder'
-);
+const builderCliJs = path.join(backendDir, 'node_modules', 'electron-builder', 'cli.js');
 
 const STAGES = [
   { match: /loaded configuration/i, pct: 10, ceil: 19, label: 'Carregando configuração...' },
@@ -57,9 +52,8 @@ const tick = setInterval(() => {
   renderBar(false);
 }, 500);
 
-const child = spawn(localBuilderBin, builderArgs, {
+const child = spawn(process.execPath, [builderCliJs, ...builderArgs], {
   cwd: backendDir,
-  shell: process.platform === 'win32',
   stdio: ['inherit', 'pipe', 'pipe']
 });
 

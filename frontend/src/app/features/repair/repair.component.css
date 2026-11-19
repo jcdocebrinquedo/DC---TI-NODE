@@ -1,57 +1,117 @@
 .buttons-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 8px;
 }
 
 .btn-repair {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 14px 18px;
-  background: #ffffff;
-  border: 1.5px solid #cbd5e1;
-  border-radius: 10px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 13.5px;
-  color: #1e293b;
-  transition: all 0.2s ease;
-}
-
-.btn-repair:hover:not(:disabled) {
-  border-color: #2563eb;
-  background: #eff6ff;
-  color: #2563eb;
-}
-
-.btn-repair:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.btn-primary-suite {
-  display: inline-flex;
-  align-items: center;
+  justify-content: flex-start;
   gap: 8px;
-  height: 40px;
-  padding: 0 18px;
-  border: none;
-  background: #2563eb;
-  color: #ffffff;
+  height: auto;
+  min-height: 36px;
+  padding: 7px 12px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 12.5px;
+  color: #334155;
+  text-align: left;
+  white-space: normal;
+  line-height: 1.3;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+  transition: all 0.15s ease;
+}
+
+.btn-repair mat-icon {
+  color: #64748b;
+  transition: color 0.15s ease;
+  flex-shrink: 0;
+}
+
+.btn-repair:hover:not(:disabled) {
+  border-color: #93c5fd;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.btn-repair:hover:not(:disabled) mat-icon {
+  color: #2563eb;
+}
+
+.btn-repair-danger {
+  border-color: #fecdd3;
+  background: #fff1f2;
+  color: #be123c;
+}
+
+.btn-repair-danger mat-icon {
+  color: #e11d48;
+}
+
+.btn-repair-danger:hover:not(:disabled) {
+  border-color: #fda4af;
+  background: #ffe4e6;
+  color: #9f1239;
+}
+
+.btn-repair-danger:hover:not(:disabled) mat-icon {
+  color: #be123c;
+}
+
+.btn-repair-success {
+  border-color: #a7f3d0;
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.btn-repair-success mat-icon {
+  color: #059669;
+}
+
+.btn-repair-success:hover:not(:disabled) {
+  border-color: #6ee7b7;
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.btn-repair-success:hover:not(:disabled) mat-icon {
+  color: #047857;
+}
+
+.btn-primary-suite {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+  box-shadow: 0 1px 2px rgba(37, 99, 235, 0.18);
+}
+
+.btn-primary-suite:hover:not(:disabled) {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
 }
 
 .card-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: 10px;
+  margin-bottom: 14px;
   padding-bottom: 10px;
   border-bottom: 1px solid #f1f5f9;
+  flex-wrap: wrap;
+}
+
+.card-header.space-between {
+  justify-content: space-between;
+}
+
+.card-header-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .card-header h3 {
@@ -62,7 +122,9 @@
 }
 
 .section-icon {
-  font-size: 20px;
+  font-size: 19px;
+  width: 19px;
+  height: 19px;
   color: #2563eb;
 }
 
@@ -71,9 +133,15 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 48px;
-  gap: 12px;
+  padding: 36px 20px;
+  gap: 10px;
   color: #64748b;
-  font-size: 14px;
+  font-size: 13.5px;
+  text-align: center;
 }
 
+@media (max-width: 600px) {
+  .buttons-grid {
+    grid-template-columns: 1fr;
+  }
+}

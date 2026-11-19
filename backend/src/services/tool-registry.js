@@ -191,7 +191,7 @@ class ToolRegistry {
       },
       {
         name: 'generate_service_order',
-        description: 'Gera formalmente a Ordem de Serviço nos formatos DOCX (Microsoft Word), PDF, Markdown (.md) e Texto (.txt) com o design corporativo oficial e a logomarca da empresa.',
+        description: 'Gera formalmente a Ordem de Serviço exclusivamente no formato PDF com o design corporativo oficial e a logomarca da empresa.',
         parameters: {
           type: 'object',
           properties: {
@@ -494,11 +494,8 @@ class ToolRegistry {
             success: true,
             order_id: res.order_id,
             created_at: res.created_at_local,
-            docx_path: res.docx_path,
             pdf_path: res.pdf_path,
-            markdown_path: res.markdown_path,
-            txt_path: res.txt_path,
-            message: `Ordem de Serviço ${res.order_id} gerada com sucesso em DOCX, PDF, MD e TXT com a logomarca da empresa.`
+            message: `Ordem de Serviço ${res.order_id} gerada com sucesso exclusivamente em PDF com a logomarca da empresa.`
           };
         } catch (e) {
           return { success: false, error: e.message };

@@ -68,19 +68,10 @@
       <div class="input-group">
         <label>Novo Nome da Máquina (Máx. 15 caracteres NetBIOS):</label>
         <div class="input-row">
-          <input
-            type="text"
-            maxlength="15"
-            [(ngModel)]="newHostname"
-            placeholder="Ex: ESTACAO-TI-01"
-            class="hostname-input"
-          />
-          <button
-            type="button"
-            class="btn-save"
-            (click)="alterarHostname()"
-            [disabled]="loadingAlterar || !newHostname.trim()"
-          >
+          <input type="text" maxlength="15" [(ngModel)]="newHostname" placeholder="Ex: ESTACAO-TI-01"
+            class="hostname-input" />
+          <button type="button" class="btn-save" (click)="alterarHostname()"
+            [disabled]="loadingAlterar || !newHostname.trim()">
             <mat-progress-spinner *ngIf="loadingAlterar" mode="indeterminate" diameter="18"></mat-progress-spinner>
             <mat-icon *ngIf="!loadingAlterar">save</mat-icon>
             <span>{{ loadingAlterar ? 'Gravando no HKLM...' : 'Salvar Alteração' }}</span>
@@ -88,10 +79,10 @@
         </div>
       </div>
       <p class="help-text">
-        Esta operação grava em <code>HKLM\System\CurrentControlSet\Control\ComputerName</code> e chama a API <code>SetComputerNameExW</code> via core nativo Rust com token elevado UAC.
+        Esta operação grava em <code>HKLM\System\CurrentControlSet\Control\ComputerName</code> e chama a API
+        <code>SetComputerNameExW</code> via core nativo Rust com token elevado UAC.
       </p>
     </div>
   </div>
 
 </div>
-

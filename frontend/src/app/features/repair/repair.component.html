@@ -15,8 +15,10 @@
         </div>
       </div>
       <div>
-        <button type="button" class="btn-primary-suite" (click)="executarSuiteCompleta()" [disabled]="runningTask !== null">
-          <mat-progress-spinner *ngIf="runningTask === 'suite'" mode="indeterminate" diameter="16"></mat-progress-spinner>
+        <button type="button" class="btn-primary-suite" (click)="executarSuiteCompleta()"
+          [disabled]="runningTask !== null">
+          <mat-progress-spinner *ngIf="runningTask === 'suite'" mode="indeterminate"
+            diameter="14"></mat-progress-spinner>
           <mat-icon *ngIf="runningTask !== 'suite'">auto_fix_high</mat-icon>
           <span>Executar Suíte Completa</span>
         </button>
@@ -27,43 +29,47 @@
   <!-- GRUPO 2: BOTÕES INDIVIDUAIS DE REPARO -->
   <div class="group-panel">
     <div class="card-header">
-      <mat-icon class="section-icon color-blue">handyman</mat-icon>
+      <mat-icon class="section-icon">handyman</mat-icon>
       <h3>Módulos de Correção Específicos</h3>
     </div>
 
     <div class="buttons-grid">
       <button type="button" class="btn-repair" (click)="executarSpooler()" [disabled]="runningTask !== null">
-        <mat-progress-spinner *ngIf="runningTask === 'spooler'" mode="indeterminate" diameter="16"></mat-progress-spinner>
+        <mat-progress-spinner *ngIf="runningTask === 'spooler'" mode="indeterminate"
+          diameter="14"></mat-progress-spinner>
         <mat-icon *ngIf="runningTask !== 'spooler'">print</mat-icon>
         <span>Reparar Spooler de Impressão</span>
       </button>
 
       <button type="button" class="btn-repair" (click)="executarNetwork()" [disabled]="runningTask !== null">
-        <mat-progress-spinner *ngIf="runningTask === 'network'" mode="indeterminate" diameter="16"></mat-progress-spinner>
+        <mat-progress-spinner *ngIf="runningTask === 'network'" mode="indeterminate"
+          diameter="14"></mat-progress-spinner>
         <mat-icon *ngIf="runningTask !== 'network'">wifi_protected_setup</mat-icon>
         <span>Redefinir Rede & DNS</span>
       </button>
 
       <button type="button" class="btn-repair" (click)="executarSfc()" [disabled]="runningTask !== null">
-        <mat-progress-spinner *ngIf="runningTask === 'sfc'" mode="indeterminate" diameter="16"></mat-progress-spinner>
+        <mat-progress-spinner *ngIf="runningTask === 'sfc'" mode="indeterminate" diameter="14"></mat-progress-spinner>
         <mat-icon *ngIf="runningTask !== 'sfc'">fact_check</mat-icon>
         <span>Verificação SFC (Integridade)</span>
       </button>
 
       <button type="button" class="btn-repair" (click)="executarDism()" [disabled]="runningTask !== null">
-        <mat-progress-spinner *ngIf="runningTask === 'dism'" mode="indeterminate" diameter="16"></mat-progress-spinner>
+        <mat-progress-spinner *ngIf="runningTask === 'dism'" mode="indeterminate" diameter="14"></mat-progress-spinner>
         <mat-icon *ngIf="runningTask !== 'dism'">system_update_alt</mat-icon>
         <span>Restauração DISM (Component Store)</span>
       </button>
 
       <button type="button" class="btn-repair" (click)="executarRestorePoint()" [disabled]="runningTask !== null">
-        <mat-progress-spinner *ngIf="runningTask === 'restore_point'" mode="indeterminate" diameter="16"></mat-progress-spinner>
+        <mat-progress-spinner *ngIf="runningTask === 'restore_point'" mode="indeterminate"
+          diameter="14"></mat-progress-spinner>
         <mat-icon *ngIf="runningTask !== 'restore_point'">restore</mat-icon>
         <span>Criar Ponto de Restauração</span>
       </button>
 
       <button type="button" class="btn-repair" (click)="agendarChkdsk()" [disabled]="runningTask !== null">
-        <mat-progress-spinner *ngIf="runningTask === 'chkdsk'" mode="indeterminate" diameter="16"></mat-progress-spinner>
+        <mat-progress-spinner *ngIf="runningTask === 'chkdsk'" mode="indeterminate"
+          diameter="14"></mat-progress-spinner>
         <mat-icon *ngIf="runningTask !== 'chkdsk'">disc_full</mat-icon>
         <span>Agendar CHKDSK (Próximo Boot)</span>
       </button>
@@ -71,19 +77,24 @@
   </div>
 
   <!-- BARRA DE PROGRESSO PARA OPERAÇÕES LONGAS (SFC / DISM / SUÍTE) -->
-  <div class="group-panel" *ngIf="runningTask === 'sfc' || runningTask === 'dism' || runningTask === 'suite'" style="border-left: 4px solid #2563eb;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 13px;">
+  <div class="group-panel" *ngIf="runningTask === 'sfc' || runningTask === 'dism' || runningTask === 'suite'"
+    style="border-left: 3px solid #2563eb;">
+    <div
+      style="display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; font-size: 12.5px;">
       <strong style="color: #1e3a8a;">{{ activeJobMessage }}</strong>
       <span style="font-family: monospace; font-weight: 700; color: #2563eb;">
-        {{ activeJobProgress }}% <span *ngIf="activeJobEta" style="font-weight: 500; color: #475569;">• {{ activeJobEta }}</span>
+        {{ activeJobProgress }}% <span *ngIf="activeJobEta" style="font-weight: 500; color: #475569;">• {{ activeJobEta
+          }}</span>
       </span>
     </div>
     <mat-progress-bar mode="determinate" [value]="activeJobProgress"></mat-progress-bar>
   </div>
 
   <!-- BARRA DE PROGRESSO PARA DEMAIS COMANDOS DE REPARO / WINDOWS UPDATE -->
-  <div class="group-panel" *ngIf="runningTask !== null && runningTask !== 'sfc' && runningTask !== 'dism' && runningTask !== 'suite'" style="border-left: 4px solid #2563eb;">
-    <div style="font-size: 13px; font-weight: 600; color: #1e3a8a; margin-bottom: 8px;">
+  <div class="group-panel"
+    *ngIf="runningTask !== null && runningTask !== 'sfc' && runningTask !== 'dism' && runningTask !== 'suite'"
+    style="border-left: 3px solid #2563eb;">
+    <div style="font-size: 12.5px; font-weight: 600; color: #1e3a8a; margin-bottom: 8px;">
       Executando operação do sistema, aguarde...
     </div>
     <mat-progress-bar mode="indeterminate"></mat-progress-bar>
@@ -91,34 +102,40 @@
 
   <!-- GRUPO 3: CONTROLE DO WINDOWS UPDATE -->
   <div class="group-panel">
-    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-      <div style="display: flex; align-items: center; gap: 8px;">
-        <mat-icon class="section-icon color-blue">system_update</mat-icon>
+    <div class="card-header space-between">
+      <div class="card-header-title">
+        <mat-icon class="section-icon">system_update</mat-icon>
         <h3>Controle Avançado do Windows Update</h3>
       </div>
       <div *ngIf="wuStatus">
         <span class="badge"
           [ngClass]="wuStatus.mode === 'DESABILITADO_PERMANENTEMENTE' ? 'badge-danger' : (wuStatus.mode === 'ATIVO_PADRAO' ? 'badge-success' : 'badge-warning')">
-          {{ wuStatus.mode === 'DESABILITADO_PERMANENTEMENTE' ? 'DESABILITADO PERMANENTEMENTE' : (wuStatus.mode === 'ATIVO_PADRAO' ? 'ATIVO (PADRÃO)' : 'DESABILITADO PARCIAL') }}
+          {{ wuStatus.mode === 'DESABILITADO_PERMANENTEMENTE' ? 'DESABILITADO PERMANENTEMENTE' : (wuStatus.mode ===
+          'ATIVO_PADRAO' ? 'ATIVO (PADRÃO)' : 'DESABILITADO PARCIAL') }}
         </span>
       </div>
     </div>
 
     <div class="buttons-grid">
       <button type="button" class="btn-repair" (click)="repararWindowsUpdate()" [disabled]="runningTask !== null">
-        <mat-progress-spinner *ngIf="runningTask === 'wu_repair'" mode="indeterminate" diameter="16"></mat-progress-spinner>
+        <mat-progress-spinner *ngIf="runningTask === 'wu_repair'" mode="indeterminate"
+          diameter="14"></mat-progress-spinner>
         <mat-icon *ngIf="runningTask !== 'wu_repair'">build</mat-icon>
         <span>Reparo Completo do Windows Update</span>
       </button>
 
-      <button type="button" class="btn-repair" style="border-color: #fca5a5; color: #b91c1c;" (click)="desabilitarWindowsUpdatePermanentemente()" [disabled]="runningTask !== null">
-        <mat-progress-spinner *ngIf="runningTask === 'wu_disable'" mode="indeterminate" diameter="16"></mat-progress-spinner>
+      <button type="button" class="btn-repair btn-repair-danger"
+        (click)="desabilitarWindowsUpdatePermanentemente()" [disabled]="runningTask !== null">
+        <mat-progress-spinner *ngIf="runningTask === 'wu_disable'" mode="indeterminate"
+          diameter="14"></mat-progress-spinner>
         <mat-icon *ngIf="runningTask !== 'wu_disable'">block</mat-icon>
         <span>Desabilitar Permanentemente</span>
       </button>
 
-      <button type="button" class="btn-repair" style="border-color: #86efac; color: #15803d;" (click)="reativarWindowsUpdate()" [disabled]="runningTask !== null">
-        <mat-progress-spinner *ngIf="runningTask === 'wu_enable'" mode="indeterminate" diameter="16"></mat-progress-spinner>
+      <button type="button" class="btn-repair btn-repair-success"
+        (click)="reativarWindowsUpdate()" [disabled]="runningTask !== null">
+        <mat-progress-spinner *ngIf="runningTask === 'wu_enable'" mode="indeterminate"
+          diameter="14"></mat-progress-spinner>
         <mat-icon *ngIf="runningTask !== 'wu_enable'">check_circle_outline</mat-icon>
         <span>Reativar Padrão Windows Update</span>
       </button>
@@ -128,7 +145,7 @@
   <!-- GRUPO 4: HISTÓRICO DE TAREFAS EXECUTADAS -->
   <div class="group-panel panel-expand">
     <div class="card-header">
-      <mat-icon class="section-icon color-blue">history</mat-icon>
+      <mat-icon class="section-icon">history</mat-icon>
       <h3>Histórico de Execuções e Diagnósticos</h3>
     </div>
 
@@ -158,7 +175,7 @@
     </div>
 
     <div *ngIf="tasks.length === 0" class="empty-state">
-      <mat-icon style="font-size: 36px; color: #94a3b8;">construction</mat-icon>
+      <mat-icon style="font-size: 32px; width: 32px; height: 32px; color: #94a3b8;">construction</mat-icon>
       <p>Nenhuma tarefa de reparo executada nesta sessão.</p>
     </div>
   </div>
